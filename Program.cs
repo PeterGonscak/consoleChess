@@ -47,7 +47,7 @@ namespace test
 
             Console.Write("Enter FEN for game in progress, press ENTER to generate new game.");             //
             string input = Console.ReadLine();                                                             //
-            if (input != "")                                                                              //
+            if (input != null)                                                                              //
                 if (input.ToCharArray().Count(f => f == ('/')) == 7)                                     //     Input for starting position
                     mainFEN = input;                                                                    //
                 else                                                                                   //
@@ -77,7 +77,7 @@ namespace test
                             break;
                         }
                     }
-                    catch { }
+                    catch{}
                 }
 
             }
@@ -98,8 +98,8 @@ namespace test
         static bool IsValid(int sPos,int ePos, List<char> board)
         {
             if(board[sPos] == 'p')
-                if (((sPos == ePos + 8 || (sPos == ePos +16 && sPos > 47))   // 1 or 2 tiles forward if on starting tile 
-                    && board[ePos] == ' ')                                  // if it is empty
+                if (((sPos == ePos + 8 || (sPos == ePos +16 && sPos > 47))                              // 1 or 2 tiles forward if on starting tile 
+                    && board[ePos] == ' ' && (((board[ePos+8] == ' ')) || !(sPos == ePos +16)))          // if tiles in front are empty 
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)                   // take to side if not on edge of the board
                     || (sPos == ePos + 9 && sPos % 8 != 0))                     // other side
                         && char.IsUpper(board[ePos])))                         // it is enemy piece (or pawn)
@@ -108,7 +108,7 @@ namespace test
                     return false;
             else if (board[sPos] == 'P')                                       // same thing for black
                 if (((sPos == ePos - 8 || (sPos == ePos - 16 && sPos < 16))                     
-                    && board[ePos] == ' ') 
+                    && board[ePos] == ' ' && (((board[ePos-8] == ' ')) || !(sPos == ePos -16)))  
                 || (((sPos == ePos - 7 && sPos % 8 != 0) 
                     || (sPos == ePos - 9 && (sPos+ 1) % 8 != 0)) 
                         &&  char.IsLower(board[ePos])))
