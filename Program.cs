@@ -7,7 +7,7 @@ namespace test
     static class Program
     {
         static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";          // test psoition 2b3kr/2p1qppp/r1n5/2p5/pb1pB1RP/N4N2/PP1BQPP1/2R3K1 w 0 0
-        static Dictionary<char, int> pieceValues = new Dictionary<char, int>(){                    //   constant values
+        static readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){                    //   constant values
             {'p', 1},
             {'n', 3},
             {'b', 3},
@@ -22,7 +22,7 @@ namespace test
             {'K', 0},
             {' ', 0}
         };
-        static Dictionary<char, int> tileValues = new Dictionary<char, int>(){                   //
+        static readonly Dictionary<char, int> tileValues = new Dictionary<char, int>(){                   //
             {'a', 0},
             {'b', 1},
             {'c', 2},
@@ -40,8 +40,9 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        static int[][] nMoves = new int[4][]{new int[2]{-10, 6},new int[2]{-17, 15},new int[2]{-6, 10},new int[2]{-15, 17}};
-        static string[] bw = new string[] { "w", "b" };
+        static readonly int[][] nMoves = new int[4][]{new int[2]{-10, 6},new int[2]{-17, 15},new int[2]{-6, 10},new int[2]{-15, 17}};
+        static readonly int[] bMoves = new int[4]{-9,-7,7,9};
+        static readonly string[] bw = new string[] { "w", "b" };
         static void Main()
         {
 
@@ -58,7 +59,8 @@ namespace test
             board = GenerateBoard(formatFEN[0]);     //
 
             Console.WriteLine("_________________________________________________________\n");
-            Console.WriteLine("Play by writing move in format: XX(from)XX(to) - ex: b1g6");
+            Console.WriteLine("Play by writing move in format: XX(from)XX(to) - ex: d4e5");
+            Console.WriteLine("For resignation write 'resign'");
             Console.WriteLine("_________________________________________________________\n");
             bool gameOn = true;
             while (gameOn){
@@ -99,7 +101,7 @@ namespace test
         {
             if(board[sPos] == 'p')
                 if (((sPos == ePos + 8 || (sPos == ePos +16 && sPos > 47))                              // 1 or 2 tiles forward if on starting tile 
-                    && board[ePos] == ' ' && (((board[ePos+8] == ' ')) || !(sPos == ePos +16)))          // if tiles in front are empty 
+                    && board[ePos] == ' ' && (board[ePos+8] == ' ' || !(sPos == ePos +16)))          // if tiles in front are empty 
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)                   // take to side if not on edge of the board
                     || (sPos == ePos + 9 && sPos % 8 != 0))                     // other side
                         && char.IsUpper(board[ePos])))                         // it is enemy piece (or pawn)
@@ -108,7 +110,7 @@ namespace test
                     return false;
             else if (board[sPos] == 'P')                                       // same thing for black
                 if (((sPos == ePos - 8 || (sPos == ePos - 16 && sPos < 16))                     
-                    && board[ePos] == ' ' && (((board[ePos-8] == ' ')) || !(sPos == ePos -16)))  
+                    && board[ePos] == ' ' && (board[ePos-8] == ' ' || !(sPos == ePos -16)))  
                 || (((sPos == ePos - 7 && sPos % 8 != 0) 
                     || (sPos == ePos - 9 && (sPos+ 1) % 8 != 0)) 
                         &&  char.IsLower(board[ePos])))
@@ -128,7 +130,24 @@ namespace test
                         else
                             return false;
                     case 'b':
-                        break;
+                        if(sPos == ePos)
+                            return false;
+                        foreach(int d in bMoves){
+                            int testTile = sPos;
+                            while((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
+                            && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
+                            && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
+                            && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3])))){
+                                    testTile += d;   
+                                    if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile])) 
+                                    || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
+                                    || (board[testTile] != ' ' && testTile != ePos))
+                                        break;
+                                    if(testTile == ePos)
+                                        return true;
+                            }
+                        }
+                        return false;
                     case 'r':
                         break;
                     case 'q':
@@ -193,27 +212,22 @@ namespace test
         {
             string FEN = "";
             int tileCount = 0;
-            for (int i = 0; i < board.Count; i++)
-            {
+            for (int i = 0; i < board.Count; i++) {
                 if (board[i] == ' ')
                     tileCount++;
                 else if (tileCount == 0)
                     FEN += board[i];
-                else
-                {
+                else{
                     FEN += tileCount.ToString() + board[i];
                     tileCount = 0;
                 }
                 if ((i + 1) % 8 == 0 && (i + 1) != 64)
-                {
                     if (tileCount == 0)
                         FEN += "/";
-                    else
-                    {
+                    else{
                         FEN += tileCount + "/";
                         tileCount = 0;
                     }
-                }
             }
             return FEN;
         }
