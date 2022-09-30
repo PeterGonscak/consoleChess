@@ -1,4 +1,4 @@
-
+﻿
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -197,10 +197,20 @@ namespace test
                             }
                         }
                         return false;
-                    case 'k':
-                        break;
+                   case 'k':
+                        if((!(sPos % 8 == 0 && (qkMoves[0] == (ePos-sPos)
+                                            || qkMoves[2] == (ePos-sPos)
+                                            || qkMoves[5] == (ePos-sPos))))
+                        && !(sPos % 8 == 7 && (qkMoves[1] == (ePos-sPos)
+                                            || qkMoves[3] == (ePos-sPos)
+                                            || qkMoves[6] == (ePos-sPos)))
+                        && qkMoves.Contains(ePos-sPos)
+                        && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
+                        || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos]))))
+                            return true;
+                        return false;
                 }
-            return true;
+                return false;
         }
 
         static int TileToNum(string s)
