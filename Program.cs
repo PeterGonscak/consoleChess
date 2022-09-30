@@ -1,4 +1,5 @@
-﻿using System;
+
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -41,8 +42,15 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        static readonly int[][] nMoves = new int[4][]{new int[2]{-10, 6},new int[2]{-17, 15},new int[2]{-6, 10},new int[2]{-15, 17}};
-        static readonly int[] moves = new int[8]{-9, -7, 7, 9, -8, -1, 1, 8};
+        static readonly int[][] nMoves = new int[4][] { 
+            new int[2] { -10, 6 }, 
+            new int[2] { -17, 15 }, 
+            new int[2] { -6, 10 }, 
+            new int[2] { -15, 17 } 
+        };
+        static readonly int[] bMoves = new int[4] { -9, -7, 7, 9};
+        static readonly int[] rMoves = new int[4] {-8, -1, 1, 8 };
+        static readonly int[] qkMoves = new int[8] { -9, -7, 7, 9, -8, -1, 1, 8 };
         static readonly string[] bw = new string[] { "w", "b" };
         static void Main()
         {
@@ -50,7 +58,7 @@ namespace test
             bool large = Console.ReadLine() == "yes";
             Console.Write(line + "\nEnter FEN for game in progress, press ENTER to generate new game: ");             //
             string input = Console.ReadLine();                                                             //
-            if (input != null)                                                                              //
+            if (input != null)                                                                            //
                 if (input.ToCharArray().Count(f => f == ('/')) == 7)                                     //     Input for starting position
                     mainFEN = input;                                                                    //
                 else                                                                                   //
@@ -65,22 +73,28 @@ namespace test
             Console.WriteLine("For resignation write 'resign'");
             Console.WriteLine(line);
             bool gameOn = true;
-            while (gameOn) {
-                WriteBoard(board,large);
+            while (gameOn)
+            {
+                WriteBoard(board, large);
                 Console.WriteLine(formatFEN[1] + " to move.");
-                while (true) {                                               //
+                while (true)
+                {                                               //
                     Console.Write("Enter an valid move: ");                 //     loop for valid move
                     string move = Console.ReadLine();                      //
-                    if(move == "resign") {
+                    if (move == "resign")
+                    {
                         gameOn = false;
                         break;
                     }
-                    try {
-                        if (MakeMove(move, board, char.Parse(formatFEN[1]))) {
+                    try
+                    {
+                        if (MakeMove(move, board, char.Parse(formatFEN[1])))
+                        {
                             formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                             break;
                         }
-                    } catch {}
+                    }
+                    catch { }
                     Console.WriteLine(line);
                 }
             }
@@ -90,7 +104,8 @@ namespace test
         {
             int sPos = TileToNum(s.Substring(0, 2));
             int ePos = TileToNum(s.Substring(2, 2));
-            if (((onTurn == 'w' && char.IsLower(board[sPos])) || (onTurn == 'b' && char.IsUpper(board[sPos]))) && IsValid(sPos, ePos, board)) {
+            if (((onTurn == 'w' && char.IsLower(board[sPos])) || (onTurn == 'b' && char.IsUpper(board[sPos]))) && IsValid(sPos, ePos, board))
+            {
                 board[ePos] = board[sPos];
                 board[sPos] = ' ';
                 return true;
@@ -98,54 +113,93 @@ namespace test
             return false;
         }
 
-        static bool IsValid(int sPos,int ePos, List<char> board)
+        static bool IsValid(int sPos, int ePos, List<char> board)
         {
-            if(board[sPos] == 'p')
-                return (((sPos == ePos + 8 || (sPos == ePos +16 && sPos > 47))                              // 1 or 2 tiles forward if on starting tile 
-                    && board[ePos] == ' ' && (board[ePos+8] == ' ' || !(sPos == ePos +16)))          // if tiles in front are empty 
+            if (sPos == ePos)
+                return false;
+            if (board[sPos] == 'p')
+                return (((sPos == ePos + 8 || (sPos == ePos + 16 && sPos > 47))                              // 1 or 2 tiles forward if on starting tile 
+                    && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))          // if tiles in front are empty 
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)                   // take to side if not on edge of the board
                     || (sPos == ePos + 9 && sPos % 8 != 0))                     // other side
                         && char.IsUpper(board[ePos])));                         // it is enemy piece (or pawn)
             else if (board[sPos] == 'P')                                       // same thing for black
-                return (((sPos == ePos - 8 || (sPos == ePos - 16 && sPos < 16))                     
-                    && board[ePos] == ' ' && (board[ePos-8] == ' ' || !(sPos == ePos -16)))  
-                || (((sPos == ePos - 7 && sPos % 8 != 0) 
-                    || (sPos == ePos - 9 && (sPos+ 1) % 8 != 0)) 
-                        &&  char.IsLower(board[ePos])));
+            {
+                return (((sPos == ePos - 8 || (sPos == ePos - 16 && sPos < 16))
+                    && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
+                || (((sPos == ePos - 7 && sPos % 8 != 0)
+                    || (sPos == ePos - 9 && (sPos + 1) % 8 != 0))
+                        && char.IsLower(board[ePos])));
+            }
             else
-                switch (char.ToLower(board[sPos])){
+                switch (char.ToLower(board[sPos]))
+                {
                     case 'n':
-                        return ((((nMoves[0].Contains(ePos-sPos) || nMoves[1].Contains(ePos-sPos)) && sPos % 8 != 0)
-                            || (nMoves[0].Contains(ePos-sPos) && (sPos - 1) % 8 != 0)
-                            || ((nMoves[2].Contains(ePos-sPos) || nMoves[3].Contains(ePos-sPos)) && (sPos+1) % 8 != 0)
-                            || (nMoves[2].Contains(ePos-sPos) && (sPos + 2) % 8 != 0))
-                            && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos])) 
+                        return ((((nMoves[0].Contains(ePos - sPos) || nMoves[1].Contains(ePos - sPos)) && sPos % 8 != 0)
+                            || (nMoves[0].Contains(ePos - sPos) && (sPos - 1) % 8 != 0)
+                            || ((nMoves[2].Contains(ePos - sPos) || nMoves[3].Contains(ePos - sPos)) && (sPos + 1) % 8 != 0)
+                            || (nMoves[2].Contains(ePos - sPos) && (sPos + 2) % 8 != 0))
+                            && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
                                 || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos]))));
                     case 'b':
-                        if(sPos != ePos)
-                            foreach(int d in moves.){
-                                int testTile = sPos;
-                                while((!(testTile % 8 == 0 && (d == moves[0] || d == moves[2])))
-                                && (!(testTile % 8 == 7 && (d == moves[1] || d == moves[3])))
-                                && (!(testTile < 8 && (d == moves[0] || d == moves[1])))
-                                && (!(testTile > 55 && (d == moves[2] || d == moves[3])))){
-                                    testTile += d;   
-                                    if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile])) 
-                                    || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
-                                    || (board[testTile] != ' ' && testTile != ePos))
-                                        break;
-                                    if(testTile == ePos)
-                                        return true;
+                        foreach (int d in bMoves)
+                        {
+                            int testTile = sPos;
+                            while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
+                            && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
+                            && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
+                            && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                            {
+                                testTile += d;
+                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
+                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
+                                || (board[testTile] != ' ' && testTile != ePos))
+                                    break;
+                                if (testTile == ePos)
+                                    return true;
                             }
                         }
                         return false;
                     case 'r':
-                        break;
+                        foreach (int d in rMoves)
+                        {
+                            int testTile = sPos;
+                            while ((!(testTile % 8 == 0 && d == rMoves[1]))
+                            && (!(testTile % 8 == 7 && d == rMoves[2]))
+                            && (!(testTile < 8 && d == rMoves[0]))
+                            && (!(testTile > 55 && d == rMoves[3])))
+                            {
+                                testTile += d;
+                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
+                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
+                                || (board[testTile] != ' ' && testTile != ePos))
+                                    break;
+                                if (testTile == ePos)
+                                    return true;
+                            }
+                        }
+                        return false;
                     case 'q':
-                        break;
+                        foreach (int d in qkMoves)
+                        {
+                            int testTile = sPos;
+                            while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
+                            && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
+                            && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                            && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7])))) {
+                                testTile += d;
+                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
+                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
+                                || (board[testTile] != ' ' && testTile != ePos))
+                                    break;
+                                if (testTile == ePos)
+                                    return true;
+                            }
+                        }
+                        return false;
                     case 'k':
                         break;
-            }
+                }
             return true;
         }
 
@@ -175,8 +229,9 @@ namespace test
             string letterCords = "          A     B     C     D     E     F     G     H";
             string midTileEdge = "  |  ";
             string tileEdge = "";
-            if(large) {
-                rowSplit ="        -|---------|---------|---------|---------|---------|---------|---------|---------|-";
+            if (large)
+            {
+                rowSplit = "        -|---------|---------|---------|---------|---------|---------|---------|---------|-";
                 letterCords = "              A         B         C         D         E         F         G         H";
                 midTileEdge = "    |    ";
                 tileEdge = "         |         |         |         |         |         |         |         |         | ";
@@ -184,16 +239,18 @@ namespace test
             Console.WriteLine("\n" + letterCords + (large ? "\n" : ""));
             Console.WriteLine(rowSplit);
             Console.Write(tileEdge + (large ? "\n" : ""));
-            foreach (char c in board) {
+            foreach (char c in board)
+            {
                 if (i == 0)
                     Console.Write("    " + (9 - x));
                 i++;
                 Console.Write(midTileEdge + c);
-                if (i == 8) {
+                if (i == 8)
+                {
                     Console.WriteLine(midTileEdge + (9 - x));
                     Console.Write(tileEdge + (large ? "\n" : ""));
                     Console.WriteLine(rowSplit);
-                    Console.Write(large ? (x==8 ? "" : tileEdge)+ "\n" : "");
+                    Console.Write(large ? (x == 8 ? "" : tileEdge) + "\n" : "");
                     i = 0;
                     x++;
                 }
@@ -218,19 +275,22 @@ namespace test
         {
             string FEN = "";
             int tileCount = 0;
-            for (int i = 0; i < board.Count; i++) {
+            for (int i = 0; i < board.Count; i++)
+            {
                 if (board[i] == ' ')
                     tileCount++;
                 else if (tileCount == 0)
                     FEN += board[i];
-                else {
+                else
+                {
                     FEN += tileCount.ToString() + board[i];
                     tileCount = 0;
                 }
                 if ((i + 1) % 8 == 0 && (i + 1) != 64)
                     if (tileCount == 0)
                         FEN += "/";
-                    else {
+                    else
+                    {
                         FEN += tileCount + "/";
                         tileCount = 0;
                     }
