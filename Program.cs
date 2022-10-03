@@ -75,27 +75,54 @@ namespace test
                 Console.WriteLine(line);
                 WriteBoard(board, large, formatFEN);
                 checks = checkChecker(board, formatFEN[1]);
-                Console.WriteLine(formatFEN[1] + " to move.");
-                while (true)
+                if(!CheckMateChecker(board, formatFEN[1], checks))
                 {
-                    Console.Write("Enter a valid move: ");
-                    string move = Console.ReadLine();
-                    if (move == "resign")
+                    Console.WriteLine(formatFEN[1] + " to move.");
+                    while (true)
                     {
-                        gameOn = false;
-                        break;
-                    }
-                    try
-                    {
-                        if (MakeMove(move, board, formatFEN[1], checks))
-                        {
-                            formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                        Console.Write("Enter a valid move: ");
+                        string move = Console.ReadLine();
+                        if (move == "resign")
+                       {
+                            gameOn = false;
                             break;
                         }
+                        try
+                        {
+                            if (MakeMove(move, board, formatFEN[1], checks))
+                            {
+                                formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                                break;
+                            }
+                        }
+                        catch { }
                     }
-                    catch { }
+                }
+                else
+                {
+                    gameOn = false;
+                    Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won." ));
                 }
             }
+        }
+        static bool CheckMateChecker(List<char> mainBoard, string onTurn, bool[] checks)
+        {
+            char[] board = mainBoard.ToArray();
+            for(int i = 0; i < 64; i++)
+            {
+                char[] testBoard = mainBoard.ToArray();
+                if ((onTurn == "b" && char.IsLower(board[i]))
+                || (onTurn == "w" && char.IsUpper(board[i])))
+                    board[i] = ' ';
+                if (board[i] != ' ')
+                {
+                    if(board[i] == 'p')
+                    {
+                        
+                    }
+                }
+            }
+            return false;
         }
         static bool MakeMove(string s, List<char> board, string onTurn, bool[] checks)
         {
@@ -119,12 +146,12 @@ namespace test
             if (sPos == ePos)
                 return false;
             if (board[sPos] == 'p')
-                return (((sPos == ePos + 8 || (sPos == ePos + 16 && sPos > 47))                              // 1 or 2 tiles forward if on starting tile 
-                    && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))          // if tiles in front are empty 
-                || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)                   // take to side if not on edge of the board
-                    || (sPos == ePos + 9 && sPos % 8 != 0))                     // other side
-                        && char.IsUpper(board[ePos])));                         // it is enemy piece (or pawn)
-            else if (board[sPos] == 'P')                                       // same thing for black
+                return (((sPos == ePos + 8 || (sPos == ePos + 16 && sPos > 47))
+                    && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
+                || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)
+                    || (sPos == ePos + 9 && sPos % 8 != 0))
+                        && char.IsUpper(board[ePos])));
+            else if (board[sPos] == 'P')
             {
                 return (((sPos == ePos - 8 || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
@@ -217,105 +244,120 @@ namespace test
         {
             char[] board = boardA.ToArray();
             bool[] checks = new bool[64];
-            for(int i = 0; i < 64; i++){
-                if((onTurn == "w" && char.IsLower(board[i])) 
+            for(int i = 0; i < 64; i++)
+            {
+                if ((onTurn == "w" && char.IsLower(board[i]))
                 || (onTurn == "b" && char.IsUpper(board[i])))
                     board[i] = ' ';
-                if(board[i] == ' ')
-                    continue;
-                if(board[i] == 'p'){
-                    if(i % 8 != 0)
-                        checks[i-9] = true;
-                    if(i % 8 != 7)
-                        checks[i-7] = true;
-                }
-                else if (board[i] == 'P'){
-                    if(i % 8 != 0)
-                        checks[i+7] = true;     
-                    if(i % 8 != 7)
-                        checks[i+9] = true;
-                }                
-                else
-                    switch(char.ToLower(board[i]))
-                    {    
-                        case 'n':
-                            if(i % 8 != 0){
-                                if(i % 8 != 1){
-                                    if(i > 7)
-                                        checks[i+nMoves[0][0]] = true;
-                                    if(i < 56)
-                                        checks[i+nMoves[0][1]] = true;
-                                }
-                                if(i > 15)
-                                    checks[i+nMoves[1][0]] = true;
-                                if(i < 48)
-                                    checks[i+nMoves[1][1]] = true;
-                            }
-                            if(i % 8 != 7){
-                                if(i % 8 != 6){
-                                    if(i > 7)
-                                        checks[i+nMoves[2][0]] = true;
-                                    if(i < 54)
-                                        checks[i+nMoves[2][1]] = true;
-                                }
-                                if(i > 15)
-                                    checks[i+nMoves[3][0]] = true;
-                                if(i < 48)
-                                    checks[i+nMoves[3][1]] = true;
-                            }
-                            break;
-                        case 'b':
-                            foreach (int d in bMoves){
-                               int testTile = i;
-                                while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
-                                && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
-                                && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
-                                && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3])))){
-                                    testTile += d;
-                                    checks[testTile] = true;
-                                    if(boardA[testTile] != ' ')
-                                        break;
-                                }
-                            }
-                            break;
-                        case 'r':
-                            foreach (int d in rMoves){
-                                int testTile = i;
-                                while ((!(testTile % 8 == 0 && d == rMoves[1]))
-                                && (!(testTile % 8 == 7 && d == rMoves[2]))
-                                && (!(testTile < 8 && d == rMoves[0]))
-                                && (!(testTile > 55 && d == rMoves[3]))){
-                                    testTile += d;
-                                    checks[testTile] = true;
-                                    if(boardA[testTile] != ' ')
-                                        break;
-                                }
-                            }
-                            break;
-                        case 'q':
-                            foreach (int d in qkMoves){
-                                int testTile = i;
-                                while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7])))) {
-                                    testTile += d;
-                                    checks[testTile] = true;
-                                    if(boardA[testTile] != ' ')
-                                        break;
-                                }
-                            }
-                            break;
-                        case 'k':
-                            foreach(int d in qkMoves){
-                                if((!(i % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                && (!(i % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                && (!(i < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                && (!(i > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
-                                    checks[i+d] = true;
-                            }
-                            break;
+                if (board[i] != ' ')
+                {
+                    if (board[i] == 'p')
+                    {
+                        if (i % 8 != 0)
+                            checks[i - 9] = true;
+                        if (i % 8 != 7)
+                            checks[i - 7] = true;
                     }
+                    else if (board[i] == 'P')
+                    {
+                        if (i % 8 != 0)
+                            checks[i + 7] = true;
+                        if (i % 8 != 7)
+                            checks[i + 9] = true;
+                    }
+                    else
+                        switch (char.ToLower(board[i]))
+                        {
+                            case 'n':
+                                if (i % 8 != 0)
+                                {
+                                    if (i % 8 != 1)
+                                    {
+                                        if (i > 7)
+                                            checks[i + nMoves[0][0]] = true;
+                                        if (i < 56)
+                                            checks[i + nMoves[0][1]] = true;
+                                    }
+                                    if (i > 15)
+                                        checks[i + nMoves[1][0]] = true;
+                                    if (i < 48)
+                                        checks[i + nMoves[1][1]] = true;
+                                }
+                                if (i % 8 != 7)
+                                {
+                                    if (i % 8 != 6)
+                                    {
+                                        if (i > 7)
+                                            checks[i + nMoves[2][0]] = true;
+                                        if (i < 54)
+                                            checks[i + nMoves[2][1]] = true;
+                                    }
+                                    if (i > 15)
+                                        checks[i + nMoves[3][0]] = true;
+                                    if (i < 48)
+                                        checks[i + nMoves[3][1]] = true;
+                                }
+                                break;
+                            case 'b':
+                                foreach (int d in bMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
+                                    && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
+                                    && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
+                                    && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                                    {
+                                        testTile += d;
+                                        checks[testTile] = true;
+                                        if (boardA[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                            case 'r':
+                                foreach (int d in rMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && d == rMoves[1]))
+                                    && (!(testTile % 8 == 7 && d == rMoves[2]))
+                                    && (!(testTile < 8 && d == rMoves[0]))
+                                    && (!(testTile > 55 && d == rMoves[3])))
+                                    {
+                                        testTile += d;
+                                        checks[testTile] = true;
+                                        if (boardA[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                            case 'q':
+                                foreach (int d in qkMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
+                                    && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
+                                    && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                                    && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    {
+                                        testTile += d;
+                                        checks[testTile] = true;
+                                        if (boardA[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                            case 'k':
+                                foreach (int d in qkMoves)
+                                {
+                                    if ((!(i % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
+                                    && (!(i % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
+                                    && (!(i < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                                    && (!(i > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                        checks[i + d] = true;
+                                }
+                                break;
+                        }
+                }
             }
             return checks;
         }
@@ -422,13 +464,13 @@ namespace test
         {
             string FEN = "";
             int tileCount = 0;
-            for (int i = 0; i < board.Count; i++)
+            for (int i = 0; i < board.Count; i++) 
             {
                 if (board[i] == ' ')
                     tileCount++;
                 else if (tileCount == 0)
                     FEN += board[i];
-                else
+                else 
                 {
                     FEN += tileCount.ToString() + board[i];
                     tileCount = 0;
@@ -436,7 +478,7 @@ namespace test
                 if ((i + 1) % 8 == 0 && (i + 1) != 64)
                     if (tileCount == 0)
                         FEN += "/";
-                    else
+                    else 
                     {
                         FEN += tileCount + "/";
                         tileCount = 0;
