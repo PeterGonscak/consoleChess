@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace test
 {
-    public class Functions 
+    public static class Functions 
     {
-        public readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){
+        public static readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){
             {'p', 1}, {'P', -1},
             {'n', 3}, {'N', -3},
             {'b', 3}, {'B', -3},
@@ -15,7 +15,7 @@ namespace test
             {'k', 0}, {'K', 0},
             {' ', 0}
         };
-        public readonly Dictionary<char, int> tileValues = new Dictionary<char, int>(){
+        public static readonly Dictionary<char, int> tileValues = new Dictionary<char, int>(){
             {'a', 0},
             {'b', 1},
             {'c', 2},
@@ -33,29 +33,66 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        public readonly int [][] pMoves = new int [2][] {
-            new int[4] { 7, 8, 9, 16 }, 
-            new int[4] { -7, -8, -9, -16 }
-        };
-        public readonly int[][] nMoves = new int[4][] { 
-            new int[2] { -10, 6 }, 
-            new int[2] { -17, 15 }, 
-            new int[2] { -6, 10 }, 
-            new int[2] { -15, 17 } 
-        };
-        public readonly int[] bMoves = new int[4] { -9, -7, 7, 9};
-        public readonly int[] rMoves = new int[4] {-8, -1, 1, 8 };
-        public readonly int[] qkMoves = new int[8] { -9, -7, 7, 9, -8, -1, 1, 8 };
         
-        public bool isEnemy(string onTurn, char piece)
+        public static bool isEnemy(string onTurn, char piece)
         {
             return (onTurn == "b" && char.IsLower(piece))
                 || (onTurn == "w" && char.IsUpper(piece));
         }
-        public bool isFriend(string onTurn, char piece)
+        public static bool isFriend(string onTurn, char piece)
         {
             return (onTurn == "w" && char.IsLower(piece))
                 || (onTurn == "b" && char.IsUpper(piece));
+        }
+        public static int Eval(List<char> board)
+        {
+            int sum = 0;
+            foreach (char c in board)
+                sum += pieceValues[c];
+            return sum;
+        }
+        public static string GenerateFEN(List<char> board, string[] formatFEN)
+        {
+            string FEN = "";
+            int tileCount = 0;
+            for (int i = 0; i < board.Count; i++) 
+            {
+                if (board[i] == ' ')
+                    tileCount++;
+                else if (tileCount == 0)
+                    FEN += board[i];
+                else 
+                {
+                    FEN += tileCount.ToString() + board[i];
+                    tileCount = 0;
+                }
+                if ((i + 1) % 8 == 0 && (i + 1) != 64)
+                    if (tileCount == 0)
+                        FEN += "/";
+                    else 
+                    {
+                        FEN += tileCount + "/";
+                        tileCount = 0;
+                    }
+            }
+            FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3];
+            return FEN;
+        }
+        public static int TileToNum(string s)
+        {
+            return tileValues[s[0]] + tileValues[s[1]];
+        }
+        public static List<char> GenerateBoard(string FEN)
+        {
+            List<char> board = new List<char>();
+            foreach (string row in FEN.Split("/"))
+                foreach (char c in row)
+                    if ("12345678".Contains(c))
+                        for (int z = 0; z < int.Parse(c.ToString()); z++)
+                            board.Add(' ');
+                    else
+                        board.Add(c);
+            return board;
         }
     }
 }
