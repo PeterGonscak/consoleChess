@@ -9,7 +9,7 @@ namespace test
     {
         static Functions fnc = new Functions();
         static readonly string line = "________________________________________________________________________________________________\n";
-        static string mainFEN = "K7/R7/7R/8/8/8/8/4k3 w kqKQ 0 0";//"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";          // test psoition 2b3kr/2p1qppp/r1n5/2p5/pb1pB1RP/N4N2/PP1BQPP1/2R3K1 w 0 0
+        static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";          // test psoition 2b3kr/2p1qppp/r1n5/2p5/pb1pB1RP/N4N2/PP1BQPP1/2R3K1 w 0 0
         static readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){                    //   constant values
             {'p', 1}, {'P', -1},
             {'n', 3}, {'N', -3},
@@ -80,6 +80,7 @@ namespace test
                 Console.WriteLine(line);
                 WriteBoard(board, large, formatFEN);
                 checks = checkChecker(board, formatFEN[1]);
+                WriteChecks(checks, large);
                 if(!CheckMateChecker(board, formatFEN[1], checks))
                 {
                     Console.WriteLine(formatFEN[1] + " to move.");
@@ -117,8 +118,16 @@ namespace test
             if (!checks[sPos])
                 return false;
             foreach (int d in qkMoves)
+            {
                 if(sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks))
-                    return false;
+                {
+                    char[] tryBoard = mainBoard.ToArray();
+                    tryBoard[sPos + d] = tryBoard[sPos];
+                    tryBoard[sPos] = ' ';
+                    if(!checkChecker(tryBoard.ToList(), onTurn)[Array.IndexOf(tryBoard, onTurn == "w" ? 'k' : 'K')])
+                        return false;
+                }
+            }
             for(int i = 0; i < 64; i++)
             {
                 char[] testBoard = mainBoard.ToArray();
@@ -126,7 +135,6 @@ namespace test
                     board[i] = ' ';
                 if (board[i] != ' ')
                 {
-                    Console.WriteLine("if");
                     if(board[i] == 'p')
                     {
                         foreach(int m in pMoves[1])
@@ -173,7 +181,6 @@ namespace test
                         switch (char.ToLower(board[i]))
                         {
                             case 'n':
-                            Console.WriteLine("N");
                                 if (i % 8 != 0)
                                 {
                                     if (i % 8 != 1)
@@ -254,7 +261,6 @@ namespace test
                             case 'b':
                                 foreach (int d in bMoves)
                                 {
-                                    Console.WriteLine("B");
                                     int testTile = i;
                                     while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
                                     && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
@@ -279,7 +285,6 @@ namespace test
                                 }
                                 break;
                             case 'r':
-                            Console.WriteLine("R");
                                 foreach (int d in rMoves)
                                 {
                                     int testTile = i;
@@ -306,7 +311,6 @@ namespace test
                                 }
                                 break;
                             case 'q':
-                                Console.WriteLine("Q");
                                 foreach (int d in qkMoves)
                                 {
                                     int testTile = i;
