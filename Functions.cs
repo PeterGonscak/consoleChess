@@ -33,7 +33,8 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        
+        public static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";
+        public static bool large;
         public static bool isEnemy(string onTurn, char piece)
         {
             return (onTurn == "b" && char.IsLower(piece))
@@ -93,6 +94,32 @@ namespace test
                     else
                         board.Add(c);
             return board;
+        }
+
+        public static string StartDialog()
+        {
+            Console.Clear();
+            Console.Write("Enter custom valid FEN for game in progress, other input is new game: ");
+            string FEN = Console.ReadLine();
+            if (FEN.ToCharArray().Count(f => f == ('/')) == 7)
+            {
+                mainFEN = FEN;
+                Console.WriteLine($"{Graphics.line}\nInput Accepted. \n{Graphics.line}");
+            }
+            else
+                Console.WriteLine($"{Graphics.line}\nWrong Input. \n{Graphics.line}");
+            while (true)
+            {
+                Console.Write("Do you want large graphics ? [yes/no]: ");
+                string input = Console.ReadLine();
+                if(input == "yes" || input == "no")
+                {
+                    large = input == "yes" ? true : false;
+                    break;
+                }
+            }
+            Console.Clear();
+            return mainFEN;
         }
     }
 }
