@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace test
 {
-    public static class Functions 
+    public static class Functions
     {
         public static readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){
             {'p', 1}, {'P', -1},
@@ -33,14 +33,14 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        public static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";
+        public static string mainFEN = "k7/7p/8/8/8/K7/7P/8 w qQ 0 0";//"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";
         public static bool large;
-        public static bool isEnemy(string onTurn, char piece)
+        public static bool IsEnemy(string onTurn, char piece)
         {
             return (onTurn == "b" && char.IsLower(piece))
                 || (onTurn == "w" && char.IsUpper(piece));
         }
-        public static bool isFriend(string onTurn, char piece)
+        public static bool IsFriend(string onTurn, char piece)
         {
             return (onTurn == "w" && char.IsLower(piece))
                 || (onTurn == "b" && char.IsUpper(piece));
@@ -56,13 +56,13 @@ namespace test
         {
             string FEN = "";
             int tileCount = 0;
-            for (int i = 0; i < board.Count; i++) 
+            for (int i = 0; i < board.Count; i++)
             {
                 if (board[i] == ' ')
                     tileCount++;
                 else if (tileCount == 0)
                     FEN += board[i];
-                else 
+                else
                 {
                     FEN += tileCount.ToString() + board[i];
                     tileCount = 0;
@@ -70,14 +70,13 @@ namespace test
                 if ((i + 1) % 8 == 0 && (i + 1) != 64)
                     if (tileCount == 0)
                         FEN += "/";
-                    else 
+                    else
                     {
                         FEN += tileCount + "/";
                         tileCount = 0;
                     }
             }
-            FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3];
-            return FEN;
+            return FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3];
         }
         public static int TileToNum(string s)
         {
@@ -112,7 +111,7 @@ namespace test
             {
                 Console.Write("Do you want large graphics ? [yes/no]: ");
                 string input = Console.ReadLine();
-                if(input == "yes" || input == "no")
+                if (input == "yes" || input == "no")
                 {
                     large = input == "yes" ? true : false;
                     break;
@@ -120,6 +119,17 @@ namespace test
             }
             Console.Clear();
             return mainFEN;
+        }
+
+        public static string SelectPiece(string onTurn)
+        {
+            string s = " ";
+            while (s.Length != 1 && !"nbrq".Contains(s))
+            {
+                Console.Write("Type to which piece do you want to promote the pawn. [n / b / r / q]: ");
+                s = Console.ReadLine();
+            }
+            return onTurn == "w" ? s : s.ToUpper();
         }
     }
 }
