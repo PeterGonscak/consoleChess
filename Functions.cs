@@ -33,7 +33,7 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
-        public static string mainFEN = "k7/7p/8/8/8/K7/7P/8 w qQ 0 0";//"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ 0 0";
+        public static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ - 0 0";
         public static bool large;
         public static bool IsEnemy(string onTurn, char piece)
         {
@@ -56,27 +56,22 @@ namespace test
         {
             string FEN = "";
             int tileCount = 0;
-            for (int i = 0; i < board.Count; i++)
+            for (int i = 0; i < 64; i++)
             {
                 if (board[i] == ' ')
                     tileCount++;
-                else if (tileCount == 0)
-                    FEN += board[i];
                 else
                 {
-                    FEN += tileCount.ToString() + board[i];
+                    FEN += (tileCount == 0 ? "" : tileCount.ToString()) + board[i];
                     tileCount = 0;
                 }
-                if ((i + 1) % 8 == 0 && (i + 1) != 64)
-                    if (tileCount == 0)
-                        FEN += "/";
-                    else
+                if (i % 8 == 7)
                     {
-                        FEN += tileCount + "/";
+                        FEN += (tileCount == 0 ? "" : tileCount) + (i != 63 ? "/" : "");
                         tileCount = 0;
                     }
             }
-            return FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3];
+            return FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3] + " " + formatFEN[4] + " " + formatFEN[5];
         }
         public static int TileToNum(string s)
         {
@@ -121,15 +116,15 @@ namespace test
             return mainFEN;
         }
 
-        public static string SelectPiece(string onTurn)
+        public static char SelectPiece(string onTurn)
         {
             string s = " ";
-            while (s.Length != 1 && !"nbrq".Contains(s))
+            while ((s.Length != 1 && !"nbrq".Contains(s)) || s == " ")
             {
                 Console.Write("Type to which piece do you want to promote the pawn. [n / b / r / q]: ");
                 s = Console.ReadLine();
             }
-            return onTurn == "w" ? s : s.ToUpper();
+            return char.Parse(onTurn == "w" ? s : s.ToUpper());
         }
     }
 }

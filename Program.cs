@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -20,6 +20,8 @@ namespace test
         static readonly int[] rMoves = new int[4] { -8, -1, 1, 8 };
         static readonly int[] qkMoves = new int[8] { -9, -7, 7, 9, -8, -1, 1, 8 };
         static readonly string[] bw = new string[] { "w", "b" };
+        static bool staleMate = false;
+        static double[] score = new double[2] { 0, 0};
         static void Main()
         {
             string[] formatFEN = Functions.StartDialog().Split(" ");
@@ -55,7 +57,10 @@ namespace test
                             || (formatFEN[1] == "b" && char.IsUpper(board[sPos]) && !checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')]))
                             && IsValid(sPos, ePos, board, checks))
                             {
-                                board[ePos] = board[sPos];
+                                if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
+                                    board[ePos] = Functions.SelectPiece(formatFEN[1]);
+                                else                
+                                    board[ePos] = board[sPos];
                                 board[sPos] = ' ';
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
@@ -67,26 +72,12 @@ namespace test
                 else
                 {
                     gameOn = false;
-                    Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
+                    if(staleMate)
+                        Console.WriteLine("StaleMate, its a draw.");
+                    else
+                        Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
                 }
             }
-        }
-        static bool MakeMove(string s, List<char> board, string onTurn, bool[] checks)
-        {
-            int sPos = Functions.TileToNum(s.Substring(0, 2));
-            int ePos = Functions.TileToNum(s.Substring(2, 2));
-            char[] testBoard = board.ToArray();
-            testBoard[ePos] = testBoard[sPos];
-            testBoard[sPos] = ' ';
-            if (((onTurn == "w" && char.IsLower(board[sPos]) && !checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'k')])
-              || (onTurn == "b" && char.IsUpper(board[sPos]) && !checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')]))
-            && IsValid(sPos, ePos, board, checks))
-            {
-                board[ePos] = board[sPos];
-                board[sPos] = ' ';
-                return true;
-            }
-            return false;
         }
         static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard)
         {
@@ -192,8 +183,6 @@ namespace test
         {
             char[] board = mainBoard.ToArray();
             int sPos = mainBoard.IndexOf(onTurn == "w" ? 'k' : 'K');
-            if (!checks[sPos])
-                return false;
             foreach (int d in qkMoves)
             {
                 if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks))
@@ -414,9 +403,10 @@ namespace test
                                 }
                                 break;
                         }
-
                 }
             }
+            if(!checks[sPos])
+                staleMate = true;
             return true;
         }
         static bool[] checkChecker(List<char> boardA, string onTurn)
