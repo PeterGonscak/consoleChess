@@ -62,12 +62,15 @@ namespace test
                                 else                
                                     board[ePos] = board[sPos];
                                 board[sPos] = ' ';
+                                formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
                             }
                         }
                         catch { }
                     }
+                    if(formatFEN[1] == "b")
+                        formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
                 }
                 else
                 {

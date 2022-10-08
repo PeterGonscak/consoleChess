@@ -33,6 +33,26 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
+        public static readonly Dictionary<int, char> numValues = new Dictionary<int, char>(){
+            {0, 'a'},
+            {1, 'b'},
+            {2, 'c'},
+            {3, 'd'},
+            {4, 'e'},
+            {5, 'f'},
+            {6, 'g'},
+            {7, 'h'}
+        };
+        public static readonly Dictionary<int, char> rowValues = new Dictionary<int, char>(){
+            {56, '1'},
+            {48, '2'},
+            {40, '3'},
+            {32, '4'},
+            {24, '5'},
+            {16, '6'},
+            {8, '7'},
+            {0, '8'}
+        };
         public static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ - 0 0";
         public static bool large;
         public static bool IsEnemy(string onTurn, char piece)
@@ -76,6 +96,10 @@ namespace test
         public static int TileToNum(string s)
         {
             return tileValues[s[0]] + tileValues[s[1]];
+        }
+        public static string NumToTile(int i)
+        {
+            return numValues[i % 8].ToString() + rowValues[i - (i % 8)];
         }
         public static List<char> GenerateBoard(string FEN)
         {
