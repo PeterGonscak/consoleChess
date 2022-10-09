@@ -15,6 +15,9 @@ namespace test
         public static string midTileEdgeLarge = "    |    ";
         public static string tileEdgeLarge = "         |         |         |         |         |         |         |         |         | ";
         public static string line = "________________________________________________________________________________________________\n";
+        public static string mainFEN = "8/7p/8/k7/8/K7/7P/8 w kqKQ - 0 0"; //"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ - 0 0"; //"1N1KQ1R1/PPPP2PP/5P2/5p2/7k/1BB5/pppp1NRp/rnbq1bnr b kqKQ - 0 0";
+        public static bool large;
+
         
         public static void WriteHint()
         {
@@ -62,6 +65,43 @@ namespace test
             Console.WriteLine("Evaluation: " + Functions.Eval(board));
             Console.WriteLine("FEN: " + Functions.GenerateFEN(board, formatFEN));
             Console.WriteLine(line);
+        }
+        public static string[] StartDialog()
+        {
+            Console.Clear();
+            while (true)
+            {
+                Console.Write("Do you want large graphics ? [yes/no]: ");
+                string input = Console.ReadLine();
+                if (input == "yes" || input == "no")
+                {
+                    large = input == "yes" ? true : false;
+                    break;
+                }
+            }
+            Console.Clear();
+            while (true)
+            {
+                Console.Write("Do you want start game from a custom FEN ? [yes/no]: ");
+                string input = Console.ReadLine();
+                if (input == "no")
+                    break;
+                else if(input == "yes")
+                {
+                    Console.Clear();
+                    while(true)
+                    {
+                        Console.Write("Enter full FEN to start the game: ");
+                        string inputFEN = Console.ReadLine();
+                        string[] formatFEN = inputFEN.Split(" ");
+                        if (inputFEN.Count(f => f == '/') == 7 && formatFEN.Length == 6)
+                            return formatFEN;
+                        
+                    }
+                }
+            }
+            Console.Clear();
+            return mainFEN.Split(" ");
         }
     }
 }

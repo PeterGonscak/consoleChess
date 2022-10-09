@@ -24,7 +24,7 @@ namespace test
         static double[] score = new double[2] { 0, 0};
         static void Main()
         {
-            string[] formatFEN = Functions.StartDialog().Split(" ");
+            string[] formatFEN = Graphics.StartDialog();
             List<char> board = Functions.GenerateBoard(formatFEN[0]);
             bool[] checks = new bool[64];
             bool gameOn = true;
@@ -32,9 +32,9 @@ namespace test
             {
                 Console.Clear();
                 Graphics.WriteHint();
-                Graphics.WriteBoard(board, Functions.large, formatFEN);
+                Graphics.WriteBoard(board, Graphics.large, formatFEN);
                 checks = checkChecker(board, formatFEN[1]);
-                if (!CheckMateChecker(board, formatFEN[1], checks))
+                if (!CheckMateChecker(board, formatFEN[1], checks, formatFEN[3]))
                 {
                     Console.WriteLine(formatFEN[1] + " to move.");
                     while (true)
@@ -50,18 +50,14 @@ namespace test
                         {
                             int sPos = Functions.TileToNum(move.Substring(0, 2));
                             int ePos = Functions.TileToNum(move.Substring(2, 2));
-                            char[] testBoard = board.ToArray();
-                            testBoard[ePos] = testBoard[sPos];
-                            testBoard[sPos] = ' ';
+                            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN);
                             if (((formatFEN[1] == "w" && char.IsLower(board[sPos]) && !checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'k')])
                             || (formatFEN[1] == "b" && char.IsUpper(board[sPos]) && !checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')]))
-                            && IsValid(sPos, ePos, board, checks))
+                            && IsValid(sPos, ePos, board, checks, formatFEN[3]))
                             {
                                 if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
-                                    board[ePos] = Functions.SelectPiece(formatFEN[1]);
-                                else                
-                                    board[ePos] = board[sPos];
-                                board[sPos] = ' ';
+                                    board[sPos] = Functions.SelectPiece(formatFEN[1]);
+                                board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN).ToList();
                                 formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
@@ -82,7 +78,18 @@ namespace test
                 }
             }
         }
-        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard)
+        static char[] ChangePiece(char[] board, int sPos, int ePos, string[] formatFEN)
+        {
+            board[ePos] = board[sPos];
+            if(formatFEN[3] != "-")
+                if(board[sPos] == 'p' && ePos + 8 == Functions.TileToNum(formatFEN[3]))
+                    board[ePos + 8] = ' ';
+                else if(board[sPos] == 'P' && ePos - 8 == Functions.TileToNum(formatFEN[3]))
+                    board[ePos - 8] = ' ';
+            board[sPos] = ' ';
+            return board;
+        }
+        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string enP)
         {
             if (sPos == ePos)
                 return false;
@@ -91,15 +98,13 @@ namespace test
                     && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)
                     || (sPos == ePos + 9 && sPos % 8 != 0))
-                        && char.IsUpper(board[ePos])));
+                        && (char.IsUpper(board[ePos]) || ePos + 8 == Functions.TileToNum(enP))));
             else if (board[sPos] == 'P')
-            {
                 return ((((sPos == ePos - 8 && sPos < 56) || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
                 || (((sPos == ePos - 7 && sPos % 8 != 0)
                     || (sPos == ePos - 9 && (sPos + 1) % 8 != 0))
-                        && char.IsLower(board[ePos])));
-            }
+                        && (char.IsLower(board[ePos]) || ePos - 8 == Functions.TileToNum(enP))));
             else
                 switch (char.ToLower(board[sPos]))
                 {
@@ -182,21 +187,15 @@ namespace test
                 }
             return false;
         }
-        static bool CheckMateChecker(List<char> mainBoard, string onTurn, bool[] checks)
+        static bool CheckMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
         {
             char[] board = mainBoard.ToArray();
             int sPos = mainBoard.IndexOf(onTurn == "w" ? 'k' : 'K');
+            if(!checks[sPos])
+                return StaleMateChecker(mainBoard, onTurn, checks, enP);
             foreach (int d in qkMoves)
-            {
-                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks))
-                {
-                    char[] tryBoard = mainBoard.ToArray();
-                    tryBoard[sPos + d] = tryBoard[sPos];
-                    tryBoard[sPos] = ' ';
-                    if (!checkChecker(tryBoard.ToList(), onTurn)[Array.IndexOf(tryBoard, onTurn == "w" ? 'k' : 'K')])
-                        return false;
-                }
-            }
+                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, enP))
+                    return false;
             for (int i = 0; i < 64; i++)
             {
                 char[] testBoard = mainBoard.ToArray();
@@ -208,13 +207,14 @@ namespace test
                     {
                         foreach (int m in pMoves[1])
                         {
-                            if (!((((0 == m + 8 && i > 7) || (0 == m + 16 && i > 47))
-                            && mainBoard[i] == ' ' && (mainBoard[i + 8] == ' ' || !(0 == m + 16)))
-                            || (((0 == m + 7 && i % 8 != 7)
-                            || (0 == m + 9 && i % 8 != 0))
-                            && char.IsUpper(mainBoard[i]))))
+                            if ((0 == m + 16 && (i < 48 || mainBoard[i - 16] != ' ' || mainBoard[i - 8] != ' '))
+                            || (0 == m + 8  && mainBoard[i - 8] != ' ')
+                            || ((0 == m + 9 && i % 8 == 0) || (0 == m + 7 && i % 8 == 7)
+                            && !char.IsUpper((enP != "-" && i + m + 8 == Functions.TileToNum(enP)) ? mainBoard[i + m + 8] : mainBoard[i + m])))
                                 continue;
                             testBoard[i + m] = 'p';
+                            if(enP != "-" && i + m + 8 == Functions.TileToNum(enP))
+                                testBoard[i + m + 8] = ' ';
                             testBoard[i] = ' ';
                             if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'k')])
                                 return false;
@@ -225,21 +225,14 @@ namespace test
                     {
                         foreach (int m in pMoves[0])
                         {
-                            if (!((((0 == m - 8 && i < 56)|| (0 == m - 16 && i < 16))
-                            && mainBoard[i] == ' ' && (mainBoard[i - 8] == ' ' || !(0 == m - 16)))
-                            || (((0 == m - 7 && i % 8 != 0)
-                            || (0 == m - 9 && i % 8 != 7))
-                            && char.IsLower(mainBoard[i]))))
+                            if ((0 == m - 16 && (i > 15 || mainBoard[i + 16] != ' ' || mainBoard[i + 8] != ' '))
+                            || (0 == m - 8  && mainBoard[i + 8] != ' ')
+                            || ((0 == m - 7 && i % 8 == 7) || (0 == m - 9 && i % 8 == 0)
+                            || !char.IsLower((enP != "-" && i + m - 8 == Functions.TileToNum(enP)) ? mainBoard[i + m - 8] : mainBoard[i + m])))
                                 continue;
                             testBoard[i + m] = 'P';
-                            testBoard[i] = ' ';
-                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')])
-                                return false;
-                            testBoard = mainBoard.ToArray();
-                        }
-                        if (i < 16)
-                        {
-                            testBoard[i + 16] = 'P';
+                            if(enP != "-" && testBoard[i + m - 8] == Functions.TileToNum(enP))
+                                testBoard[i + m - 8] = ' ';
                             testBoard[i] = ' ';
                             if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')])
                                 return false;
@@ -300,7 +293,7 @@ namespace test
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
-                                        if (i < 54)
+                                        if (i < 56)
                                         {
                                             testBoard[i + nMoves[2][1]] = testBoard[i];
                                             testBoard[i] = ' ';
@@ -408,8 +401,6 @@ namespace test
                         }
                 }
             }
-            if(!checks[sPos])
-                staleMate = true;
             return true;
         }
         static bool[] checkChecker(List<char> boardA, string onTurn)
@@ -532,6 +523,11 @@ namespace test
                 }
             }
             return checks;
+        }
+
+        static bool StaleMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
+        {
+            return false;
         }
     }
 }
