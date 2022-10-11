@@ -96,7 +96,6 @@ namespace test
                         string[] formatFEN = inputFEN.Split(" ");
                         if (inputFEN.Count(f => f == '/') == 7 && formatFEN.Length == 6)
                             return formatFEN;
-                        
                     }
                 }
             }

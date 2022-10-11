@@ -50,14 +50,14 @@ namespace test
                         {
                             int sPos = Functions.TileToNum(move.Substring(0, 2));
                             int ePos = Functions.TileToNum(move.Substring(2, 2));
-                            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN);
-                            if (((formatFEN[1] == "w" && char.IsLower(board[sPos]) && !checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'k')])
-                            || (formatFEN[1] == "b" && char.IsUpper(board[sPos]) && !checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')]))
-                            && IsValid(sPos, ePos, board, checks, formatFEN[3]))
+                            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
+                            if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
+                            || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
+                            && IsValid(sPos, ePos, board, checks, formatFEN[3], formatFEN[1]))
                             {
                                 if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
                                     board[sPos] = Functions.SelectPiece(formatFEN[1]);
-                                board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN).ToList();
+                                board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
                                 formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
@@ -78,20 +78,24 @@ namespace test
                 }
             }
         }
-        static char[] ChangePiece(char[] board, int sPos, int ePos, string[] formatFEN)
+        static char[] ChangePiece(char[] board, int sPos, int ePos, string enP)
         {
             board[ePos] = board[sPos];
-            if(formatFEN[3] != "-")
-                if(board[sPos] == 'p' && ePos + 8 == Functions.TileToNum(formatFEN[3]))
+            if(enP != "-")
+                if(board[sPos] == 'p' && ePos + 8 == Functions.TileToNum(enP))
                     board[ePos + 8] = ' ';
-                else if(board[sPos] == 'P' && ePos - 8 == Functions.TileToNum(formatFEN[3]))
+                else if(board[sPos] == 'P' && ePos - 8 == Functions.TileToNum(enP))
                     board[ePos - 8] = ' ';
             board[sPos] = ' ';
             return board;
         }
-        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string enP)
+        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string enP, string onTurn)
         {
             if (sPos == ePos)
+                return false;
+            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, enP);
+            if((onTurn == "w" && checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'k')])
+            || (onTurn == "b") && checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')])
                 return false;
             if (board[sPos] == 'p')
                 return ((((sPos == ePos + 8 && sPos > 7) || (sPos == ePos + 16 && sPos > 47))
@@ -191,11 +195,11 @@ namespace test
         {
             char[] board = mainBoard.ToArray();
             int sPos = mainBoard.IndexOf(onTurn == "w" ? 'k' : 'K');
+            foreach (int d in qkMoves)
+                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, enP, onTurn))
+                    return false;
             if(!checks[sPos])
                 return StaleMateChecker(mainBoard, onTurn, checks, enP);
-            foreach (int d in qkMoves)
-                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, enP))
-                    return false;
             for (int i = 0; i < 64; i++)
             {
                 char[] testBoard = mainBoard.ToArray();
@@ -423,6 +427,7 @@ namespace test
                     }
                     else if (board[i] == 'P' && i < 56)
                     {
+                    Console.WriteLine("pass");
                         if (i % 8 != 0)
                             checks[i + 7] = true;
                         if (i % 8 != 7)
@@ -527,7 +532,147 @@ namespace test
 
         static bool StaleMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
         {
-            return false;
+            char[] board = mainBoard.ToArray();
+            for (int i = 0; i < 64; i++)
+            {
+                char[] testBoard = mainBoard.ToArray();
+                if (Functions.IsEnemy(onTurn, board[i]))
+                    board[i] = ' ';
+                if (board[i] != ' ')
+                {
+                    if (board[i] == 'p')
+                        foreach (int m in pMoves[1])
+                            if(IsValid(i, i + m, mainBoard, checks, enP, onTurn))
+                                return false;
+                    else if (board[i] == 'P')
+                        foreach (int x in pMoves[0])
+                            if(IsValid(i, i + x, mainBoard, checks, enP, onTurn))
+                                return false;
+                    else
+                        switch (char.ToLower(board[i]))
+                        {
+                            case 'n':
+                                if (i % 8 != 0)
+                                {
+                                    if (i % 8 != 1)
+                                    {
+                                        if (i > 7)
+                                        {
+                                            if(IsValid(i, i + nMoves[0][0], mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        }
+                                        if (i < 56)
+                                        {
+                                            if(IsValid(i, i + nMoves[0][1], mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        }
+                                    }
+                                    if (i > 15)
+                                    {
+                                        if(IsValid(i, i + nMoves[1][0], mainBoard, checks, enP, onTurn))
+                                            return false;
+                                    }
+                                    if (i < 48)
+                                    {
+                                        if(IsValid(i, i + nMoves[1][1], mainBoard, checks, enP, onTurn))
+                                            return false;
+                                    }
+                                }
+                                if (i % 8 != 7)
+                                {
+                                    if (i % 8 != 6)
+                                    {
+                                        if (i > 7)
+                                        {
+                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        }
+                                        if (i < 56)
+                                        {
+                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        }
+                                    }
+                                    if (i > 15)
+                                    {
+                                        if(IsValid(i, i + nMoves[3][0], mainBoard, checks, enP, onTurn))
+                                            return false;
+                                    }
+                                    if (i < 48)
+                                    {
+                                        if(IsValid(i, i + nMoves[3][1], mainBoard, checks, enP, onTurn))
+                                            return false;
+                                    }
+                                }
+                                break;
+                            case 'b':
+                                foreach (int d in bMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
+                                    && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
+                                    && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
+                                    && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                                    {
+                                        testTile += d;
+                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
+                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                            break;
+                                        else
+                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        if (mainBoard[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                            case 'r':
+                                foreach (int d in rMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && d == rMoves[1]))
+                                    && (!(testTile % 8 == 7 && d == rMoves[2]))
+                                    && (!(testTile < 8 && d == rMoves[0]))
+                                    && (!(testTile > 55 && d == rMoves[3])))
+                                    {
+                                        testTile += d;
+                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
+                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                            break;
+                                        else
+                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        if (mainBoard[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                            case 'q':
+                                foreach (int d in qkMoves)
+                                {
+                                    int testTile = i;
+                                    while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
+                                    && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
+                                    && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                                    && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    {
+                                        testTile += d;
+                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
+                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                            break;
+                                        else
+                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                                return false;
+                                        if (mainBoard[testTile] != ' ')
+                                            break;
+                                    }
+                                }
+                                break;
+                        }
+                }
+            }
+            staleMate = true;
+            return true;
         }
     }
 }
