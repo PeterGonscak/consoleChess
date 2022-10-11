@@ -58,6 +58,7 @@ namespace test
                                 if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
                                     board[sPos] = Functions.SelectPiece(formatFEN[1]);
                                 board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
+                                formatFEN[4] = CastlingRights(formatFEN[3], sPos);
                                 formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
@@ -76,6 +77,46 @@ namespace test
                     else
                         Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
                 }
+            }
+        }
+        static string CastlingRights(string s, int sPos)
+        {
+            if(s == "-")
+                return s;
+            switch(sPos)
+            {
+                case 60:
+                    s = s.Remove(s.IndexOf('q')).Remove(s.IndexOf('k'));
+                    if(s == "")
+                        return "-";
+                    return s;
+                case 4:
+                    s = s.Remove(s.IndexOf('Q')).Remove(s.IndexOf('K'));
+                    if(s == "")
+                        return "-";
+                    return s;
+                case 0:
+                    s = s.Remove(s.IndexOf('q'));
+                    if(s == "")
+                        return "-";
+                    return s;
+                case 7:
+                    s = s.Remove(s.IndexOf('q'));
+                        if(s == "")
+                            return "-";
+                        return s;
+                case 56:
+                    s = s.Remove(s.IndexOf('q'));
+                        if(s == "")
+                            return "-";
+                        return s;
+                case 63:
+                    s = s.Remove(s.IndexOf('q'));
+                        if(s == "")
+                            return "-";
+                        return s;
+                default:
+                    return s;
             }
         }
         static char[] ChangePiece(char[] board, int sPos, int ePos, string enP)
@@ -102,13 +143,13 @@ namespace test
                     && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)
                     || (sPos == ePos + 9 && sPos % 8 != 0))
-                        && (char.IsUpper(board[ePos]) || ePos + 8 == Functions.TileToNum(enP))));
+                        && (char.IsUpper(board[ePos]) || (enP != "-" && ePos + 8 == Functions.TileToNum(enP)))));
             else if (board[sPos] == 'P')
                 return ((((sPos == ePos - 8 && sPos < 56) || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
                 || (((sPos == ePos - 7 && sPos % 8 != 0)
                     || (sPos == ePos - 9 && (sPos + 1) % 8 != 0))
-                        && (char.IsLower(board[ePos]) || ePos - 8 == Functions.TileToNum(enP))));
+                        && (char.IsLower(board[ePos]) || (enP != "-" && ePos - 8 == Functions.TileToNum(enP)))));
             else
                 switch (char.ToLower(board[sPos]))
                 {
@@ -177,7 +218,7 @@ namespace test
                         }
                         return false;
                     case 'k':
-                        if ((!(sPos % 8 == 0 && (qkMoves[0] == (ePos - sPos)
+                        return (!(sPos % 8 == 0 && (qkMoves[0] == (ePos - sPos)
                                             || qkMoves[2] == (ePos - sPos)
                                             || qkMoves[5] == (ePos - sPos))))
                         && !(sPos % 8 == 7 && (qkMoves[1] == (ePos - sPos)
@@ -185,9 +226,7 @@ namespace test
                                             || qkMoves[6] == (ePos - sPos)))
                         && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
                         && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
-                        || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos]))))
-                            return true;
-                        return false;
+                        || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos])));
                 }
             return false;
         }
@@ -427,7 +466,6 @@ namespace test
                     }
                     else if (board[i] == 'P' && i < 56)
                     {
-                    Console.WriteLine("pass");
                         if (i % 8 != 0)
                             checks[i + 7] = true;
                         if (i % 8 != 7)
@@ -529,7 +567,6 @@ namespace test
             }
             return checks;
         }
-
         static bool StaleMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
         {
             char[] board = mainBoard.ToArray();
@@ -544,11 +581,10 @@ namespace test
                         foreach (int m in pMoves[1])
                             if(IsValid(i, i + m, mainBoard, checks, enP, onTurn))
                                 return false;
-                    else if (board[i] == 'P')
+                    if (board[i] == 'P')
                         foreach (int x in pMoves[0])
                             if(IsValid(i, i + x, mainBoard, checks, enP, onTurn))
                                 return false;
-                    else
                         switch (char.ToLower(board[i]))
                         {
                             case 'n':
