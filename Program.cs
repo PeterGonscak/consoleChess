@@ -63,8 +63,8 @@ namespace test
                                     board[sPos] = Functions.SelectPiece(formatFEN[1]);
                                 board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
                                 if(formatFEN[1] == "b")
-                                    formatFEN[6] = (int.Parse(formatFEN[6]) + 1).ToString();
-                                formatFEN[4] = CastlingRights(formatFEN[2], sPos);
+                                    formatFEN[4] = (int.Parse(formatFEN[4]) + 1).ToString();
+                                formatFEN[2] = CastlingRights(formatFEN[2], sPos);
                                 formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
