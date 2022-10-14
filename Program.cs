@@ -64,7 +64,7 @@ namespace test
                                 board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
                                 if(formatFEN[1] == "b")
                                     formatFEN[4] = (int.Parse(formatFEN[4]) + 1).ToString();
-                                formatFEN[2] = CastlingRights(formatFEN[2], sPos);
+                                formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
                                 formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
                                 formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                 break;
@@ -85,43 +85,44 @@ namespace test
                 }
             }
         }
-        static string CastlingRights(string s, int sPos)
+        static string CastlingRights(string s, int sPos, int ePos, List<char> board)
         {
             if(s == "-")
                 return s;
-            switch(sPos)
+            switch(board[ePos])
             {
-                case 60:
-                    s = s.Remove(s.IndexOf('q')).Remove(s.IndexOf('k'));
+                case 'k':
+                    if(sPos == 5)
+                        s = s.Remove(s.IndexOf('q'),1).Remove(s.IndexOf('k'),1);
                     if(s == "")
                         return "-";
                     return s;
-                case 4:
-                    s = s.Remove(s.IndexOf('Q')).Remove(s.IndexOf('K'));
+                case 'K':
+                    if(sPos == 60)
+                        s = s.Remove(s.IndexOf('Q'),1).Remove(s.IndexOf('K'),1);
                     if(s == "")
                         return "-";
                     return s;
-                case 0:
-                    s = s.Remove(s.IndexOf('q'));
+                case 'r':
+                    if(sPos == 63)
+                        s = s.Remove(s.IndexOf('k'));
+                    else if (sPos == 56)
+                        s = s.Remove(s.IndexOf('q'));
                     if(s == "")
                         return "-";
                     return s;
-                case 7:
-                    s = s.Remove(s.IndexOf('q'));
-                        if(s == "")
-                            return "-";
-                        return s;
-                case 56:
-                    s = s.Remove(s.IndexOf('q'));
-                        if(s == "")
-                            return "-";
-                        return s;
-                case 63:
-                    s = s.Remove(s.IndexOf('q'));
-                        if(s == "")
-                            return "-";
-                        return s;
+                case 'R':
+                    if(sPos == 63)
+                        s = s.Remove(s.IndexOf('K'));
+
+                    else if (sPos == 56)
+                        s = s.Remove(s.IndexOf('Q'));
+                    if(s == "")
+                        return "-";
+                    return s;
                 default:
+                    if(s == "")
+                        return "-";
                     return s;
             }
         }
