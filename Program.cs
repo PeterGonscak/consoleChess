@@ -34,7 +34,7 @@ namespace test
                 Graphics.WriteHint();
                 Graphics.WriteBoard(board, Graphics.large, formatFEN);
                 checks = checkChecker(board, formatFEN[1]);
-                if (!CheckMateChecker(board, formatFEN[1], checks, formatFEN[3]))
+                if (!CheckMateChecker(board, formatFEN, checks))
                 {
                     Console.WriteLine(formatFEN[1] + " to move.");
                     while (true)
@@ -53,7 +53,7 @@ namespace test
                             char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
                             if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
                             || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
-                            && IsValid(sPos, ePos, board, checks, formatFEN[3], formatFEN[1]))
+                            && IsValid(sPos, ePos, board, checks, formatFEN))
                             {
                                 if(char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
                                     formatFEN[4] = "0";
@@ -132,29 +132,55 @@ namespace test
                     board[ePos + 8] = ' ';
                 else if(board[sPos] == 'P' && ePos - 8 == Functions.TileToNum(enP))
                     board[ePos - 8] = ' ';
+            if(board[sPos] == 'k')
+            {
+                if(ePos == sPos - 2)
+                {
+                    board[59] = 'r';
+                    board[56] = ' ';
+                }  
+                else if(ePos == sPos + 2)
+                {
+                    board[61] = 'r';
+                    board[63] = ' ';
+                }
+            }
+            else if(board[sPos] == 'K')
+            {
+                if(ePos == sPos - 2)
+                {
+                    board[3] = 'R';
+                    board[0] = ' ';
+                }  
+                else if(ePos == sPos + 2)
+                {
+                    board[5] = 'R';
+                    board[7] = ' ';
+                }
+            }
             board[sPos] = ' ';
             return board;
         }
-        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string enP, string onTurn)
+        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string[] formatFEN)
         {
             if (sPos == ePos)
                 return false;
-            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, enP);
-            if((onTurn == "w" && checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'k')])
-            || (onTurn == "b") && checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')])
+            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos,formatFEN[3]);
+            if((formatFEN[1] == "w" && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'k')])
+            || (formatFEN[1] == "b") && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')])
                 return false;
             if (board[sPos] == 'p')
                 return ((((sPos == ePos + 8 && sPos > 7) || (sPos == ePos + 16 && sPos > 47))
                     && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
                 || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)
                     || (sPos == ePos + 9 && sPos % 8 != 0))
-                        && (char.IsUpper(board[ePos]) || (enP != "-" && ePos + 8 == Functions.TileToNum(enP)))));
+                        && (char.IsUpper(board[ePos]) || (formatFEN[3] != "-" && ePos + 8 == Functions.TileToNum(formatFEN[3])))));
             else if (board[sPos] == 'P')
                 return ((((sPos == ePos - 8 && sPos < 56) || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
                 || (((sPos == ePos - 7 && sPos % 8 != 0)
                     || (sPos == ePos - 9 && (sPos + 1) % 8 != 0))
-                        && (char.IsLower(board[ePos]) || (enP != "-" && ePos - 8 == Functions.TileToNum(enP)))));
+                        && (char.IsLower(board[ePos]) || (formatFEN[3] != "-" && ePos - 8 == Functions.TileToNum(formatFEN[3])))));
             else
                 switch (char.ToLower(board[sPos]))
                 {
@@ -223,31 +249,39 @@ namespace test
                         }
                         return false;
                     case 'k':
-                        return (!(sPos % 8 == 0 && (qkMoves[0] == (ePos - sPos)
-                                            || qkMoves[2] == (ePos - sPos)
-                                            || qkMoves[5] == (ePos - sPos))))
-                        && !(sPos % 8 == 7 && (qkMoves[1] == (ePos - sPos)
-                                            || qkMoves[3] == (ePos - sPos)
-                                            || qkMoves[6] == (ePos - sPos)))
-                        && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
-                        && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
-                        || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos])));
+                        if((ePos == sPos + 2 && (!checkBoard[sPos]) && (!checkBoard[sPos+1]) && (!checkBoard[sPos+2]) 
+                            && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('k')) 
+                            || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('K')))) 
+                        || (ePos == sPos - 2 && (!checkBoard[sPos]) && (!checkBoard[sPos-1]) && (!checkBoard[sPos-2])
+                            && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('q')) 
+                            || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('Q')))))
+                            return true;
+                        else
+                            return (!(sPos % 8 == 0 && (qkMoves[0] == (ePos - sPos)
+                                                || qkMoves[2] == (ePos - sPos)
+                                                || qkMoves[5] == (ePos - sPos))))
+                            && !(sPos % 8 == 7 && (qkMoves[1] == (ePos - sPos)
+                                                || qkMoves[3] == (ePos - sPos)
+                                                || qkMoves[6] == (ePos - sPos)))
+                            && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
+                            && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
+                            || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos])));
                 }
             return false;
         }
-        static bool CheckMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
+        static bool CheckMateChecker(List<char> mainBoard, string[] formatFEN, bool[] checks)
         {
             char[] board = mainBoard.ToArray();
-            int sPos = mainBoard.IndexOf(onTurn == "w" ? 'k' : 'K');
+            int sPos = mainBoard.IndexOf(formatFEN[1] == "w" ? 'k' : 'K');
             foreach (int d in qkMoves)
-                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, enP, onTurn))
+                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, formatFEN))
                     return false;
             if(!checks[sPos])
-                return StaleMateChecker(mainBoard, onTurn, checks, enP);
+                return StaleMateChecker(mainBoard, formatFEN, checks);
             for (int i = 0; i < 64; i++)
             {
                 char[] testBoard = mainBoard.ToArray();
-                if (Functions.IsEnemy(onTurn, board[i]))
+                if (Functions.IsEnemy(formatFEN[1] , board[i]))
                     board[i] = ' ';
                 if (board[i] != ' ')
                 {
@@ -258,13 +292,13 @@ namespace test
                             if ((0 == m + 16 && (i < 48 || mainBoard[i - 16] != ' ' || mainBoard[i - 8] != ' '))
                             || (0 == m + 8  && mainBoard[i - 8] != ' ')
                             || ((0 == m + 9 && i % 8 == 0) || (0 == m + 7 && i % 8 == 7)
-                            && !char.IsUpper((enP != "-" && i + m + 8 == Functions.TileToNum(enP)) ? mainBoard[i + m + 8] : mainBoard[i + m])))
+                            && !char.IsUpper((formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3])) ? mainBoard[i + m + 8] : mainBoard[i + m])))
                                 continue;
                             testBoard[i + m] = 'p';
-                            if(enP != "-" && i + m + 8 == Functions.TileToNum(enP))
+                        if(formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3]))
                                 testBoard[i + m + 8] = ' ';
                             testBoard[i] = ' ';
-                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'k')])
+                            if (!checkChecker(testBoard.ToList(), formatFEN[1] )[Array.IndexOf(testBoard, 'k')])
                                 return false;
                             testBoard = mainBoard.ToArray();
                         }
@@ -276,13 +310,13 @@ namespace test
                             if ((0 == m - 16 && (i > 15 || mainBoard[i + 16] != ' ' || mainBoard[i + 8] != ' '))
                             || (0 == m - 8  && mainBoard[i + 8] != ' ')
                             || ((0 == m - 7 && i % 8 == 7) || (0 == m - 9 && i % 8 == 0)
-                            || !char.IsLower((enP != "-" && i + m - 8 == Functions.TileToNum(enP)) ? mainBoard[i + m - 8] : mainBoard[i + m])))
+                            || !char.IsLower((formatFEN[3] != "-" && i + m - 8 == Functions.TileToNum(formatFEN[3])) ? mainBoard[i + m - 8] : mainBoard[i + m])))
                                 continue;
                             testBoard[i + m] = 'P';
-                            if(enP != "-" && testBoard[i + m - 8] == Functions.TileToNum(enP))
+                            if(formatFEN[3] != "-" && testBoard[i + m - 8] == Functions.TileToNum(formatFEN[3]))
                                 testBoard[i + m - 8] = ' ';
                             testBoard[i] = ' ';
-                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, 'K')])
+                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')])
                                 return false;
                             testBoard = mainBoard.ToArray();
                         }
@@ -299,7 +333,7 @@ namespace test
                                         {
                                             testBoard[i + nMoves[0][0]] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -307,7 +341,7 @@ namespace test
                                         {
                                             testBoard[i + nMoves[0][1]] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -316,7 +350,7 @@ namespace test
                                     {
                                         testBoard[i + nMoves[1][0]] = testBoard[i];
                                         testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                             return false;
                                         testBoard = mainBoard.ToArray();
                                     }
@@ -324,7 +358,7 @@ namespace test
                                     {
                                         testBoard[i + nMoves[1][1]] = testBoard[i];
                                         testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                             return false;
                                         testBoard = mainBoard.ToArray();
                                     }
@@ -337,7 +371,7 @@ namespace test
                                         {
                                             testBoard[i + nMoves[2][0]] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -345,7 +379,7 @@ namespace test
                                         {
                                             testBoard[i + nMoves[2][1]] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -354,7 +388,7 @@ namespace test
                                     {
                                         testBoard[i + nMoves[3][0]] = testBoard[i];
                                         testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                             return false;
                                         testBoard = mainBoard.ToArray();
                                     }
@@ -362,7 +396,7 @@ namespace test
                                     {
                                         testBoard[i + nMoves[3][1]] = testBoard[i];
                                         testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                             return false;
                                         testBoard = mainBoard.ToArray();
                                     }
@@ -385,7 +419,7 @@ namespace test
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -411,7 +445,7 @@ namespace test
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -437,7 +471,7 @@ namespace test
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), onTurn)[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
                                                 return false;
                                             testBoard = mainBoard.ToArray();
                                         }
@@ -572,23 +606,23 @@ namespace test
             }
             return checks;
         }
-        static bool StaleMateChecker(List<char> mainBoard, string onTurn, bool[] checks, string enP)
+        static bool StaleMateChecker(List<char> mainBoard, string[] formatFEN, bool[] checks)
         {
             char[] board = mainBoard.ToArray();
             for (int i = 0; i < 64; i++)
             {
                 char[] testBoard = mainBoard.ToArray();
-                if (Functions.IsEnemy(onTurn, board[i]))
+                if (Functions.IsEnemy(formatFEN[1], board[i]))
                     board[i] = ' ';
                 if (board[i] != ' ')
                 {
                     if (board[i] == 'p')
                         foreach (int m in pMoves[1])
-                            if(IsValid(i, i + m, mainBoard, checks, enP, onTurn))
+                            if(IsValid(i, i + m, mainBoard, checks, formatFEN))
                                 return false;
                     if (board[i] == 'P')
                         foreach (int x in pMoves[0])
-                            if(IsValid(i, i + x, mainBoard, checks, enP, onTurn))
+                            if(IsValid(i, i + x, mainBoard, checks, formatFEN))
                                 return false;
                         switch (char.ToLower(board[i]))
                         {
@@ -599,23 +633,23 @@ namespace test
                                     {
                                         if (i > 7)
                                         {
-                                            if(IsValid(i, i + nMoves[0][0], mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, i + nMoves[0][0], mainBoard, checks, formatFEN))
                                                 return false;
                                         }
                                         if (i < 56)
                                         {
-                                            if(IsValid(i, i + nMoves[0][1], mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, i + nMoves[0][1], mainBoard, checks, formatFEN))
                                                 return false;
                                         }
                                     }
                                     if (i > 15)
                                     {
-                                        if(IsValid(i, i + nMoves[1][0], mainBoard, checks, enP, onTurn))
+                                        if(IsValid(i, i + nMoves[1][0], mainBoard, checks, formatFEN))
                                             return false;
                                     }
                                     if (i < 48)
                                     {
-                                        if(IsValid(i, i + nMoves[1][1], mainBoard, checks, enP, onTurn))
+                                        if(IsValid(i, i + nMoves[1][1], mainBoard, checks, formatFEN))
                                             return false;
                                     }
                                 }
@@ -625,23 +659,23 @@ namespace test
                                     {
                                         if (i > 7)
                                         {
-                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, formatFEN))
                                                 return false;
                                         }
                                         if (i < 56)
                                         {
-                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, formatFEN))
                                                 return false;
                                         }
                                     }
                                     if (i > 15)
                                     {
-                                        if(IsValid(i, i + nMoves[3][0], mainBoard, checks, enP, onTurn))
+                                        if(IsValid(i, i + nMoves[3][0], mainBoard, checks, formatFEN))
                                             return false;
                                     }
                                     if (i < 48)
                                     {
-                                        if(IsValid(i, i + nMoves[3][1], mainBoard, checks, enP, onTurn))
+                                        if(IsValid(i, i + nMoves[3][1], mainBoard, checks, formatFEN))
                                             return false;
                                     }
                                 }
@@ -660,7 +694,7 @@ namespace test
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
                                         else
-                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, testTile, mainBoard, checks, formatFEN))
                                                 return false;
                                         if (mainBoard[testTile] != ' ')
                                             break;
@@ -681,7 +715,7 @@ namespace test
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
                                         else
-                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, testTile, mainBoard, checks, formatFEN))
                                                 return false;
                                         if (mainBoard[testTile] != ' ')
                                             break;
@@ -702,7 +736,7 @@ namespace test
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
                                         else
-                                            if(IsValid(i, testTile, mainBoard, checks, enP, onTurn))
+                                            if(IsValid(i, testTile, mainBoard, checks, formatFEN))
                                                 return false;
                                         if (mainBoard[testTile] != ' ')
                                             break;
@@ -715,5 +749,7 @@ namespace test
             staleMate = true;
             return true;
         }
+
+       
     }
 }
