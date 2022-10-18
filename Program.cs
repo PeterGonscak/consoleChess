@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace test
 {
-    static class Program
+    public static class Program
     {
         static readonly int[][] pMoves = new int[2][] {
             new int[4] { 7, 8, 9, 16} ,
@@ -28,58 +28,127 @@ namespace test
             List<char> board = Functions.GenerateBoard(formatFEN[0]);
             bool[] checks = new bool[64];
             bool gameOn = true;
-            while (gameOn)
-            {
-                Console.Clear();
-                Graphics.WriteHint();
-                Graphics.WriteBoard(board, Graphics.large, formatFEN);
-                checks = checkChecker(board, formatFEN[1]);
-                if (!CheckMateChecker(board, formatFEN, checks))
+            string ans = Graphics.PlayAI();
+            if(ans == "no")
+                while (gameOn)
                 {
-                    Console.WriteLine(formatFEN[1] + " to move.");
-                    while (true)
+                    Console.Clear();
+                    Graphics.WriteHint();
+                    Graphics.WriteBoard(board, formatFEN);
+                    checks = checkChecker(board, formatFEN[1]);
+                    if (!CheckMateChecker(board, formatFEN, checks))
                     {
-                        Console.Write("Enter a valid move: ");
-                        string move = Console.ReadLine();
-                        if (move == "resign")
+                        Console.WriteLine(formatFEN[1] + " to move.");
+                        while (true)
                         {
-                            gameOn = false;
-                            break;
-                        }
-                        try
-                        {
-                            int sPos = Functions.TileToNum(move.Substring(0, 2));
-                            int ePos = Functions.TileToNum(move.Substring(2, 2));
-                            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
-                            if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
-                            || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
-                            && IsValid(sPos, ePos, board, checks, formatFEN))
+                            Console.Write("Enter a valid move: ");
+                            string move = "" + Console.ReadLine();
+                            if (move == "resign")
                             {
-                                if(char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
-                                    formatFEN[4] = "0";
-                                else
-                                    formatFEN[4] = (int.Parse(formatFEN[4]) + 1 ).ToString();
-                                if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
-                                    board[sPos] = Functions.SelectPiece(formatFEN[1]);
-                                board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
-                                if(formatFEN[1] == "b")
-                                    formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
-                                formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
-                                formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
-                                formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                                gameOn = false;
                                 break;
                             }
+                            try
+                            {
+                                int sPos = Functions.TileToNum(move.Substring(0, 2));
+                                int ePos = Functions.TileToNum(move.Substring(2, 2));
+                                char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
+                                if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
+                                || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
+                                && IsValid(sPos, ePos, board, checks, formatFEN))
+                                {
+                                    if(char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
+                                        formatFEN[4] = "0";
+                                    else
+                                        formatFEN[4] = (int.Parse(formatFEN[4]) + 1 ).ToString();
+                                    if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
+                                        board[sPos] = Functions.SelectPiece(formatFEN[1]);
+                                    board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
+                                    if(formatFEN[1] == "b")
+                                        formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
+                                    formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
+                                    formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
+                                    formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                                    break;
+                                }
+                            }
+                            catch { }
                         }
-                        catch { }
+                    }
+                    else
+                    {
+                        gameOn = false;
+                        if(staleMate)
+                            Console.WriteLine("StaleMate, its a draw.");
+                        else
+                            Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
                     }
                 }
-                else
+            else
+            {
+                Random r = new Random();
+                if(ans == "r")
+                    ans = "wb"[r.Next(2)].ToString();
+                AI ai = new AI(bw[1 - Array.IndexOf(bw, ans)]);
+                while (gameOn)
                 {
-                    gameOn = false;
-                    if(staleMate)
-                        Console.WriteLine("StaleMate, its a draw.");
+                    Console.Clear();
+                    Graphics.WriteHint();
+                    Graphics.WriteBoard(board, formatFEN);
+                    checks = checkChecker(board, formatFEN[1]);
+                    if (!CheckMateChecker(board, formatFEN, checks))
+                    {
+                        Console.WriteLine(formatFEN[1] + " to move.");
+                        while (true)
+                        {
+                            string move;
+                            if(formatFEN[1] == ans)
+                            {
+                                Console.Write("Enter a valid move: ");
+                                move = "" + Console.ReadLine();
+                            }
+                            else
+                                move = ai.PlayMove();
+                            if (move == "resign")
+                            {
+                                gameOn = false;
+                                break;
+                            }
+                            try
+                            {
+                                int sPos = Functions.TileToNum(move.Substring(0, 2));
+                                int ePos = Functions.TileToNum(move.Substring(2, 2));
+                                char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
+                                if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
+                                || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
+                                && IsValid(sPos, ePos, board, checks, formatFEN))
+                                {
+                                    if(char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
+                                        formatFEN[4] = "0";
+                                    else
+                                        formatFEN[4] = (int.Parse(formatFEN[4]) + 1 ).ToString();
+                                    if((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
+                                        board[sPos] = Functions.SelectPiece(formatFEN[1]);
+                                    board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
+                                    if(formatFEN[1] == "b")
+                                        formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
+                                    formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
+                                    formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
+                                    formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                                    break;
+                                }
+                            }
+                            catch { }
+                        }
+                    }
                     else
-                        Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
+                    {
+                        gameOn = false;
+                        if(staleMate)
+                            Console.WriteLine("StaleMate, its a draw.");
+                        else
+                            Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
+                    }
                 }
             }
         }

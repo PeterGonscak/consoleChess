@@ -26,7 +26,7 @@ namespace test
             Console.WriteLine("For resignation write 'resign'");
             Console.WriteLine(line);  
         }
-        public static void WriteBoard(List<char> board, bool large, string[] formatFEN)
+        public static void WriteBoard(List<char> board, string[] formatFEN)
         {
             int i = 0;
             int x = 1;
@@ -72,10 +72,10 @@ namespace test
             while (true)
             {
                 Console.Write("Do you want large graphics ? [yes/no]: ");
-                string input = Console.ReadLine();
+                string input = "" +  Console.ReadLine();
                 if (input == "yes" || input == "no")
                 {
-                    large = input == "yes" ? true : false;
+                    large = input == "yes";
                     break;
                 }
             }
@@ -83,7 +83,7 @@ namespace test
             while (true)
             {
                 Console.Write("Do you want start game from a custom FEN ? [yes/no]: ");
-                string input = Console.ReadLine();
+                string input = "" + Console.ReadLine();
                 if (input == "no")
                     break;
                 else if(input == "yes")
@@ -92,7 +92,7 @@ namespace test
                     while(true)
                     {
                         Console.Write("Enter full FEN to start the game: ");
-                        string inputFEN = Console.ReadLine();
+                        string inputFEN = "" + Console.ReadLine();
                         string[] formatFEN = inputFEN.Split(" ");
                         if (inputFEN.Count(f => f == '/') == 7 && formatFEN.Length == 6)
                             return formatFEN;
@@ -101,6 +101,24 @@ namespace test
             }
             Console.Clear();
             return mainFEN.Split(" ");
+        }
+        public static string PlayAI()
+        {
+            while (true)
+            {
+                Console.Write("Do you want to play against a computer ? [yes/no]: ");
+                string input = "" + Console.ReadLine();
+                if(input == "no")
+                    return input;
+                else if (input == "yes")
+                    while(true)
+                    {
+                        Console.Write("Choose your color [w - white / b - black / r - random]: ");
+                        string color = "" + Console.ReadLine();
+                        if(color == "w" || color == "b" || color == "r")
+                            return color;
+                    }
+            }
         }
     }
 }

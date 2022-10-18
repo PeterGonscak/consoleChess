@@ -117,7 +117,7 @@ namespace test
             while ((s.Length != 1 && !"nbrq".Contains(s)) || s == " ")
             {
                 Console.Write("Type to which piece do you want to promote the pawn. [n / b / r / q]: ");
-                s = Console.ReadLine();
+                s = "" + Console.ReadLine();
             }
             return char.Parse(onTurn == "w" ? s : s.ToUpper());
         }
