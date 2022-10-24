@@ -1,24 +1,15 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-
-namespace test
+﻿namespace test
 {
     public static class Program
     {
         static readonly int[][] pMoves = new int[2][] {
-            new int[4] { 7, 8, 9, 16} ,
+            new int[4] { 7, 8, 9, 16},
             new int[4] { -7, -8, -9, -16}
         };
-        static readonly int[][] nMoves = new int[4][] {
-            new int[2] { -10, 6 },
-            new int[2] { -17, 15 },
-            new int[2] { -6, 10 },
-            new int[2] { -15, 17 }
-        };
-        static readonly int[] bMoves = new int[4] { -9, -7, 7, 9 };
-        static readonly int[] rMoves = new int[4] { -8, -1, 1, 8 };
-        static readonly int[] qkMoves = new int[8] { -9, -7, 7, 9, -8, -1, 1, 8 };
+        static readonly int[] nMoves = new int[] {-17, -15, -6, 10, 17, 15,  6, -10 };
+        static readonly int[] bMoves = new int[4] {-9, -7, 9, 7 };
+        static readonly int[] rMoves = new int[4] { -8, 1, 8, -1 };
+        static readonly int[] qkMoves = new int[8] { -9, -7, 9, 7, -8, 1, 8, -1 };
         static readonly string[] bw = new string[] { "w", "b" };
         static bool staleMate = false;
         static double[] score = new double[2] { 0, 0};
@@ -48,8 +39,7 @@ namespace test
                                 gameOn = false;
                                 break;
                             }
-                            try
-                            {
+                            try{
                                 int sPos = Functions.TileToNum(move.Substring(0, 2));
                                 int ePos = Functions.TileToNum(move.Substring(2, 2));
                                 char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
@@ -72,7 +62,7 @@ namespace test
                                     break;
                                 }
                             }
-                            catch { }
+                            catch{}
                         }
                     }
                     else
@@ -114,8 +104,6 @@ namespace test
                                 gameOn = false;
                                 break;
                             }
-                            try
-                            {
                                 int sPos = Functions.TileToNum(move.Substring(0, 2));
                                 int ePos = Functions.TileToNum(move.Substring(2, 2));
                                 char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
@@ -137,8 +125,6 @@ namespace test
                                     formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
                                     break;
                                 }
-                            }
-                            catch { }
                         }
                     }
                     else
@@ -238,41 +224,39 @@ namespace test
             if((formatFEN[1] == "w" && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'k')])
             || (formatFEN[1] == "b") && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')])
                 return false;
+            int[] distanceToEdge = Functions.DistanceToEdge(sPos);
             if (board[sPos] == 'p')
                 return ((((sPos == ePos + 8 && sPos > 7) || (sPos == ePos + 16 && sPos > 47))
                     && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
-                || (((sPos == ePos + 7 && (sPos + 1) % 8 != 0)
-                    || (sPos == ePos + 9 && sPos % 8 != 0))
+                || (((sPos == ePos + 7 && distanceToEdge[5] != 0)
+                    || (sPos == ePos + 9 && distanceToEdge[7] != 0))
                         && (char.IsUpper(board[ePos]) || (formatFEN[3] != "-" && ePos + 8 == Functions.TileToNum(formatFEN[3])))));
             else if (board[sPos] == 'P')
                 return ((((sPos == ePos - 8 && sPos < 56) || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
-                || (((sPos == ePos - 7 && sPos % 8 != 0)
-                    || (sPos == ePos - 9 && (sPos + 1) % 8 != 0))
+                || (((sPos == ePos - 7 && distanceToEdge[7] != 0)
+                    || (sPos == ePos - 9 && distanceToEdge[5] != 0))
                         && (char.IsLower(board[ePos]) || (formatFEN[3] != "-" && ePos - 8 == Functions.TileToNum(formatFEN[3])))));
             else
                 switch (char.ToLower(board[sPos]))
                 {
                     case 'n':
-                        return ((((nMoves[0].Contains(ePos - sPos) || nMoves[1].Contains(ePos - sPos)) && sPos % 8 != 0)
-                            || (nMoves[0].Contains(ePos - sPos) && (sPos - 1) % 8 != 0)
-                            || ((nMoves[2].Contains(ePos - sPos) || nMoves[3].Contains(ePos - sPos)) && (sPos + 1) % 8 != 0)
-                            || (nMoves[2].Contains(ePos - sPos) && (sPos + 2) % 8 != 0))
-                            && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
-                                || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos]))));
+                                bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
+                                for(int i = 0; i < 8; i++)
+                                    if(knightLegalMoves[i])
+                                        if (sPos + nMoves[i] == ePos && (!(char.IsLower(board[sPos]) && char.IsLower(board[ePos]))
+                                            || (char.IsUpper(board[sPos]) && char.IsUpper(board[ePos]))))
+                                            return true;
+                                    
+                                break;
                     case 'b':
-                        foreach (int d in bMoves)
+                        for(int i = 0; i < 4; i++)
                         {
                             int testTile = sPos;
-                            while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
-                            && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
-                            && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
-                            && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                            for(int y = 0; y < distanceToEdge[i]; y++)
                             {
-                                testTile += d;
-                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
-                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
-                                || (board[testTile] != ' ' && testTile != ePos))
+                                testTile += bMoves[i];
+                                if (StopCheck(board, sPos, testTile, ePos))
                                     break;
                                 if (testTile == ePos)
                                     return true;
@@ -280,18 +264,13 @@ namespace test
                         }
                         return false;
                     case 'r':
-                        foreach (int d in rMoves)
+                        for(int i = 4; i < 8; i++)
                         {
                             int testTile = sPos;
-                            while ((!(testTile % 8 == 0 && d == rMoves[1]))
-                            && (!(testTile % 8 == 7 && d == rMoves[2]))
-                            && (!(testTile < 8 && d == rMoves[0]))
-                            && (!(testTile > 55 && d == rMoves[3])))
+                            for(int y = 0; y < distanceToEdge[i]; y++)
                             {
-                                testTile += d;
-                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
-                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
-                                || (board[testTile] != ' ' && testTile != ePos))
+                                testTile += rMoves[i-4];
+                                if (StopCheck(board, sPos, testTile, ePos))
                                     break;
                                 if (testTile == ePos)
                                     return true;
@@ -299,18 +278,13 @@ namespace test
                         }
                         return false;
                     case 'q':
-                        foreach (int d in qkMoves)
+                        for(int i = 0; i < 8; i++)
                         {
                             int testTile = sPos;
-                            while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                            && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                            && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                            && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                            for(int y = 0; y < distanceToEdge[i]; y++)
                             {
-                                testTile += d;
-                                if ((char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
-                                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
-                                || (board[testTile] != ' ' && testTile != ePos))
+                                testTile += qkMoves[i];
+                                if (StopCheck(board, sPos, testTile, ePos))
                                     break;
                                 if (testTile == ePos)
                                     return true;
@@ -318,68 +292,72 @@ namespace test
                         }
                         return false;
                     case 'k':
-                        if((ePos == sPos + 2 && (!checkBoard[sPos]) && (!checkBoard[sPos+1]) && (!checkBoard[sPos+2]) 
-                            && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('k')) 
-                            || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('K')))) 
-                        || (ePos == sPos - 2 && (!checkBoard[sPos]) && (!checkBoard[sPos-1]) && (!checkBoard[sPos-2])
-                            && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('q')) 
-                            || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('Q')))))
+                        if((!(distanceToEdge[7] == 0 && (qkMoves[0] == (ePos - sPos)
+                                                      || qkMoves[3] == (ePos - sPos)
+                                                      || qkMoves[7] == (ePos - sPos))))
+                        && (!(distanceToEdge[5] == 0 && (qkMoves[1] == (ePos - sPos)
+                                                      || qkMoves[2] == (ePos - sPos)
+                                                      || qkMoves[5] == (ePos - sPos))))
+                        && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
+                        && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
+                            || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos]))))
                             return true;
                         else
-                            return (!(sPos % 8 == 0 && (qkMoves[0] == (ePos - sPos)
-                                                || qkMoves[2] == (ePos - sPos)
-                                                || qkMoves[5] == (ePos - sPos))))
-                            && !(sPos % 8 == 7 && (qkMoves[1] == (ePos - sPos)
-                                                || qkMoves[3] == (ePos - sPos)
-                                                || qkMoves[6] == (ePos - sPos)))
-                            && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
-                            && ((char.IsLower(board[sPos]) && !char.IsLower(board[ePos]))
-                            || (char.IsUpper(board[sPos]) && !char.IsUpper(board[ePos])));
+                            return(ePos == sPos + 2 && (!checkBoard[sPos]) && (!checkBoard[sPos+1]) && (!checkBoard[sPos+2]) 
+                                && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('k')) 
+                                    || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('K')))) 
+                            || (ePos == sPos - 2 && (!checkBoard[sPos]) && (!checkBoard[sPos-1]) && (!checkBoard[sPos-2])
+                                && ((sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('k') && formatFEN[2].Contains('q')) 
+                                    || (sPos == Functions.GenerateBoard(Graphics.mainFEN).IndexOf('K') && formatFEN[2].Contains('Q'))));
                 }
             return false;
         }
-        static bool CheckMateChecker(List<char> mainBoard, string[] formatFEN, bool[] checks)
+        static bool StopCheck(List<char> board, int sPos, int testTile, int ePos)
         {
-            char[] board = mainBoard.ToArray();
-            int sPos = mainBoard.IndexOf(formatFEN[1] == "w" ? 'k' : 'K');
+            return(char.IsLower(board[sPos]) && char.IsLower(board[testTile]))
+                || (char.IsUpper(board[sPos]) && char.IsUpper(board[testTile]))
+                || (board[testTile] != ' ' && testTile != ePos);
+        }
+        static bool CheckMateChecker(List<char> board, string[] formatFEN, bool[] checks)
+        {
+            int sPos = board.IndexOf(formatFEN[1] == "w" ? 'k' : 'K');
             foreach (int d in qkMoves)
-                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, mainBoard, checks, formatFEN))
+                if (sPos + d > -1 && sPos + d < 64 && IsValid(sPos, sPos + d, board, checks, formatFEN))
                     return false;
             if(!checks[sPos])
-                return StaleMateChecker(mainBoard, formatFEN, checks);
+                return StaleMateChecker(board, formatFEN, checks);
+            char[] testBoard = board.ToArray();
             for (int i = 0; i < 64; i++)
             {
-                char[] testBoard = mainBoard.ToArray();
-                if (Functions.IsEnemy(formatFEN[1] , board[i]))
-                    board[i] = ' ';
-                if (board[i] != ' ')
-                {
+                if (Functions.IsEnemy(formatFEN[1] , board[i]) || board[i] == ' ')
+                    continue;
+                int[] distanceToEdge = Functions.DistanceToEdge(i);
                     if (board[i] == 'p')
                     {
                         foreach (int m in pMoves[1])
                         {
-                            if ((0 == m + 16 && (i < 48 || mainBoard[i - 16] != ' ' || mainBoard[i - 8] != ' '))
-                            || (0 == m + 8  && mainBoard[i - 8] != ' ')
-                            || ((0 == m + 9 && i % 8 == 0) || (0 == m + 7 && i % 8 == 7)
-                            && !char.IsUpper((formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3])) ? mainBoard[i + m + 8] : mainBoard[i + m])))
+                            if ((m == -16 && (i < 48 || board[i - 16] != ' ' || board[i - 8] != ' '))
+                            || (m == -8  && board[i - 8] != ' ')
+                            || ((m == -9 && distanceToEdge[7] == 0) || (m == -7 && distanceToEdge[5] == 0)
+                            && !char.IsUpper((formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3])) ? board[i + m + 8] : board[i + m])))
                                 continue;
                             testBoard[i + m] = 'p';
-                        if(formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3]))
+                            if(formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3]))
                                 testBoard[i + m + 8] = ' ';
                             testBoard[i] = ' ';
                             if (!checkChecker(testBoard.ToList(), formatFEN[1] )[Array.IndexOf(testBoard, 'k')])
                                 return false;
-                            testBoard = mainBoard.ToArray();
+                            testBoard = board.ToArray();
                         }
                     }
                     else if (board[i] == 'P')
                     {
                         foreach (int m in pMoves[0])
                         {
-                            if ((0 == m - 16 && (i > 15 || mainBoard[i + 16] != ' ' || mainBoard[i + 8] != ' '))
-                            || (0 == m - 8  && mainBoard[i + 8] != ' ')
-                            || ((0 == m - 7 && i % 8 == 7) || (0 == m - 9 && i % 8 == 0)
-                            || !char.IsLower((formatFEN[3] != "-" && i + m - 8 == Functions.TileToNum(formatFEN[3])) ? mainBoard[i + m - 8] : mainBoard[i + m])))
+                            if ((m == 16 && (i > 15 || board[i + 16] != ' ' || board[i + 8] != ' '))
+                            || (m == 8  && board[i + 8] != ' ')
+                            || ((m == 7 && distanceToEdge[7] == 0) || (m == 9 && distanceToEdge[5] == 0)
+                            || !char.IsLower((formatFEN[3] != "-" && i + m - 8 == Functions.TileToNum(formatFEN[3])) ? board[i + m - 8] : board[i + m])))
                                 continue;
                             testBoard[i + m] = 'P';
                             if(formatFEN[3] != "-" && testBoard[i + m - 8] == Functions.TileToNum(formatFEN[3]))
@@ -387,275 +365,166 @@ namespace test
                             testBoard[i] = ' ';
                             if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')])
                                 return false;
-                            testBoard = mainBoard.ToArray();
+                            testBoard = board.ToArray();
                         }
                     }
                     else
                         switch (char.ToLower(board[i]))
                         {
                             case 'n':
-                                if (i % 8 != 0)
-                                {
-                                    if (i % 8 != 1)
+                                bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
+                                for(int x = 0; x < 8; x++)
+                                    if(knightLegalMoves[x])
                                     {
-                                        if (i > 7)
-                                        {
-                                            testBoard[i + nMoves[0][0]] = testBoard[i];
-                                            testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                                return false;
-                                            testBoard = mainBoard.ToArray();
-                                        }
-                                        if (i < 56)
-                                        {
-                                            testBoard[i + nMoves[0][1]] = testBoard[i];
-                                            testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                                return false;
-                                            testBoard = mainBoard.ToArray();
-                                        }
-                                    }
-                                    if (i > 15)
-                                    {
-                                        testBoard[i + nMoves[1][0]] = testBoard[i];
+                                        testBoard[i + nMoves[i]] = testBoard[i];
                                         testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(board[i]) ? 'k' : 'K')])
                                             return false;
-                                        testBoard = mainBoard.ToArray();
+                                        testBoard = board.ToArray();
                                     }
-                                    if (i < 48)
-                                    {
-                                        testBoard[i + nMoves[1][1]] = testBoard[i];
-                                        testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                            return false;
-                                        testBoard = mainBoard.ToArray();
-                                    }
-                                }
-                                if (i % 8 != 7)
-                                {
-                                    if (i % 8 != 6)
-                                    {
-                                        if (i > 7)
-                                        {
-                                            testBoard[i + nMoves[2][0]] = testBoard[i];
-                                            testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                                return false;
-                                            testBoard = mainBoard.ToArray();
-                                        }
-                                        if (i < 56)
-                                        {
-                                            testBoard[i + nMoves[2][1]] = testBoard[i];
-                                            testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                                return false;
-                                            testBoard = mainBoard.ToArray();
-                                        }
-                                    }
-                                    if (i > 15)
-                                    {
-                                        testBoard[i + nMoves[3][0]] = testBoard[i];
-                                        testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                            return false;
-                                        testBoard = mainBoard.ToArray();
-                                    }
-                                    if (i < 48)
-                                    {
-                                        testBoard[i + nMoves[3][1]] = testBoard[i];
-                                        testBoard[i] = ' ';
-                                        if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
-                                            return false;
-                                        testBoard = mainBoard.ToArray();
-                                    }
-                                }
                                 break;
                             case 'b':
-                                foreach (int d in bMoves)
+                                for(int x = 0; x < 4; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
-                                    && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
-                                    && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
-                                    && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
-                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
-                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                        testTile += bMoves[x];
+                                        if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
+                                        || (char.IsUpper(board[i]) && char.IsUpper(board[testTile])))
                                             break;
                                         else
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(board[i]) ? 'k' : 'K')])
                                                 return false;
-                                            testBoard = mainBoard.ToArray();
+                                            testBoard = board.ToArray();
                                         }
-                                        if (mainBoard[testTile] != ' ')
+                                            if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
                                 break;
                             case 'r':
-                                foreach (int d in rMoves)
+                                for(int x = 4; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && d == rMoves[1]))
-                                    && (!(testTile % 8 == 7 && d == rMoves[2]))
-                                    && (!(testTile < 8 && d == rMoves[0]))
-                                    && (!(testTile > 55 && d == rMoves[3])))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
-                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
-                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                        testTile += rMoves[x - 4];
+                                        if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
+                                        || (char.IsUpper(board[i]) && char.IsUpper(board[testTile])))
                                             break;
                                         else
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(board[i]) ? 'k' : 'K')])
                                                 return false;
-                                            testBoard = mainBoard.ToArray();
+                                            testBoard = board.ToArray();
                                         }
-                                        if (mainBoard[testTile] != ' ')
+                                        if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
                                 break;
                             case 'q':
-                                foreach (int d in qkMoves)
+                                for(int x = 0; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                    && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                    && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                    && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
-                                        if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
-                                        || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
+                                        testTile += qkMoves[x];
+                                        if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
+                                        || (char.IsUpper(board[i]) && char.IsUpper(board[testTile])))
                                             break;
                                         else
                                         {
                                             testBoard[testTile] = testBoard[i];
                                             testBoard[i] = ' ';
-                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(mainBoard[i]) ? 'k' : 'K')])
+                                            if (!checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, char.IsLower(board[i]) ? 'k' : 'K')])
                                                 return false;
-                                            testBoard = mainBoard.ToArray();
+                                            testBoard = board.ToArray();
                                         }
-                                        if (mainBoard[testTile] != ' ')
+                                        if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
                                 break;
                         }
-                }
             }
             return true;
         }
-        static bool[] checkChecker(List<char> boardA, string onTurn)
+        static bool[] checkChecker(List<char> board, string onTurn)
         {
-            char[] board = boardA.ToArray();
             bool[] checks = new bool[64];
             for (int i = 0; i < 64; i++)
             {
                 if ((onTurn == "w" && char.IsLower(board[i]))
-                || (onTurn == "b" && char.IsUpper(board[i])))
-                    board[i] = ' ';
-                if (board[i] != ' ')
-                {
+                || (onTurn == "b" && char.IsUpper(board[i]))
+                || board[i] == ' ')
+                    continue;
+                int[] distanceToEdge = Functions.DistanceToEdge(i);
                     if (board[i] == 'p' &&  i > 7)
                     {
-                        if (i % 8 != 0)
+                        if (distanceToEdge[7] != 0)
                             checks[i - 9] = true;
-                        if (i % 8 != 7)
+                        if (distanceToEdge[5] != 0)
                             checks[i - 7] = true;
                     }
                     else if (board[i] == 'P' && i < 56)
                     {
-                        if (i % 8 != 0)
+                        if (distanceToEdge[7] != 0)
                             checks[i + 7] = true;
-                        if (i % 8 != 7)
+                        if (distanceToEdge[5] != 0)
                             checks[i + 9] = true;
                     }
                     else
                         switch (char.ToLower(board[i]))
                         {
                             case 'n':
-                                if (i % 8 != 0)
-                                {
-                                    if (i % 8 != 1)
-                                    {
-                                        if (i > 7)
-                                            checks[i + nMoves[0][0]] = true;
-                                        if (i < 56)
-                                            checks[i + nMoves[0][1]] = true;
-                                    }
-                                    if (i > 15)
-                                        checks[i + nMoves[1][0]] = true;
-                                    if (i < 48)
-                                        checks[i + nMoves[1][1]] = true;
-                                }
-                                if (i % 8 != 7)
-                                {
-                                    if (i % 8 != 6)
-                                    {
-                                        if (i > 7)
-                                            checks[i + nMoves[2][0]] = true;
-                                        if (i < 54)
-                                            checks[i + nMoves[2][1]] = true;
-                                    }
-                                    if (i > 15)
-                                        checks[i + nMoves[3][0]] = true;
-                                    if (i < 48)
-                                        checks[i + nMoves[3][1]] = true;
-                                }
+                                bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
+                                for(int x = 0; x < 8; x++)
+                                    if(knightLegalMoves[x])
+                                        checks[i + nMoves[x]] = true;
+                                    
                                 break;
                             case 'b':
-                                foreach (int d in bMoves)
+                                for(int x = 0; x < 4; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
-                                    && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
-                                    && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
-                                    && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += bMoves[x];
                                         checks[testTile] = true;
-                                        if (boardA[testTile] != ' ')
+                                        if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
                                 break;
                             case 'r':
-                                foreach (int d in rMoves)
+                                for(int x = 4; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && d == rMoves[1]))
-                                    && (!(testTile % 8 == 7 && d == rMoves[2]))
-                                    && (!(testTile < 8 && d == rMoves[0]))
-                                    && (!(testTile > 55 && d == rMoves[3])))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += rMoves[x - 4];
                                         checks[testTile] = true;
-                                        if (boardA[testTile] != ' ')
+                                        if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
                                 break;
                             case 'q':
-                                foreach (int d in qkMoves)
+                                for(int x = 0; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                    && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                    && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                    && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += qkMoves[x];
                                         checks[testTile] = true;
-                                        if (boardA[testTile] != ' ')
+                                        if (board[testTile] != ' ')
                                             break;
                                     }
                                 }
@@ -663,102 +532,47 @@ namespace test
                             case 'k':
                                 foreach (int d in qkMoves)
                                 {
-                                    if ((!(i % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                    && (!(i % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                    && (!(i < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                    && (!(i > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    if ((!(distanceToEdge[7] == 0 && (d == qkMoves[0] || d == qkMoves[3] || d == qkMoves[7])))
+                                     && (!(distanceToEdge[5] == 0 && (d == qkMoves[1] || d == qkMoves[2] || d == qkMoves[5])))
+                                     && (!(distanceToEdge[4] == 0 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                                     && (!(distanceToEdge[6] == 0 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[6]))))
                                         checks[i + d] = true;
                                 }
                                 break;
                         }
-                }
             }
             return checks;
         }
         static bool StaleMateChecker(List<char> mainBoard, string[] formatFEN, bool[] checks)
         {
-            char[] board = mainBoard.ToArray();
             for (int i = 0; i < 64; i++)
             {
-                char[] testBoard = mainBoard.ToArray();
-                if (Functions.IsEnemy(formatFEN[1], board[i]))
-                    board[i] = ' ';
-                if (board[i] != ' ')
-                {
-                    if (board[i] == 'p')
-                        foreach (int m in pMoves[1])
-                            if(IsValid(i, i + m, mainBoard, checks, formatFEN))
-                                return false;
-                    if (board[i] == 'P')
-                        foreach (int x in pMoves[0])
-                            if(IsValid(i, i + x, mainBoard, checks, formatFEN))
-                                return false;
-                        switch (char.ToLower(board[i]))
-                        {
-                            case 'n':
-                                if (i % 8 != 0)
-                                {
-                                    if (i % 8 != 1)
-                                    {
-                                        if (i > 7)
-                                        {
-                                            if(IsValid(i, i + nMoves[0][0], mainBoard, checks, formatFEN))
-                                                return false;
-                                        }
-                                        if (i < 56)
-                                        {
-                                            if(IsValid(i, i + nMoves[0][1], mainBoard, checks, formatFEN))
-                                                return false;
-                                        }
-                                    }
-                                    if (i > 15)
-                                    {
-                                        if(IsValid(i, i + nMoves[1][0], mainBoard, checks, formatFEN))
-                                            return false;
-                                    }
-                                    if (i < 48)
-                                    {
-                                        if(IsValid(i, i + nMoves[1][1], mainBoard, checks, formatFEN))
-                                            return false;
-                                    }
-                                }
-                                if (i % 8 != 7)
-                                {
-                                    if (i % 8 != 6)
-                                    {
-                                        if (i > 7)
-                                        {
-                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, formatFEN))
-                                                return false;
-                                        }
-                                        if (i < 56)
-                                        {
-                                            if(IsValid(i, i + nMoves[2][0], mainBoard, checks, formatFEN))
-                                                return false;
-                                        }
-                                    }
-                                    if (i > 15)
-                                    {
-                                        if(IsValid(i, i + nMoves[3][0], mainBoard, checks, formatFEN))
-                                            return false;
-                                    }
-                                    if (i < 48)
-                                    {
-                                        if(IsValid(i, i + nMoves[3][1], mainBoard, checks, formatFEN))
-                                            return false;
-                                    }
-                                }
-                                break;
-                            case 'b':
-                                foreach (int d in bMoves)
+                if (Functions.IsEnemy(formatFEN[1], mainBoard[i]) || mainBoard[i] == ' ')
+                    continue;
+                int[] distanceToEdge = Functions.DistanceToEdge(i);
+                if (mainBoard[i] == 'p')
+                    foreach (int m in pMoves[1])
+                        if(IsValid(i, i + m, mainBoard, checks, formatFEN))
+                            return false;
+                if (mainBoard[i] == 'P')
+                    foreach (int x in pMoves[0])
+                        if(IsValid(i, i + x, mainBoard, checks, formatFEN))
+                            return false;
+                switch (char.ToLower(mainBoard[i]))
+                    {
+                        case 'n':
+                            bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
+                            for(int x = 0; x < 8; x++)
+                                if(knightLegalMoves[x] && IsValid(i, i + nMoves[x], mainBoard, checks, formatFEN))
+                                    return false;
+                            break;
+                        case 'b':
+                                for(int x = 0; x < 4; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == bMoves[0] || d == bMoves[2])))
-                                    && (!(testTile % 8 == 7 && (d == bMoves[1] || d == bMoves[3])))
-                                    && (!(testTile < 8 && (d == bMoves[0] || d == bMoves[1])))
-                                    && (!(testTile > 55 && (d == bMoves[2] || d == bMoves[3]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += bMoves[x];
                                         if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
@@ -770,16 +584,13 @@ namespace test
                                     }
                                 }
                                 break;
-                            case 'r':
-                                foreach (int d in rMoves)
+                        case 'r':
+                                for(int x = 4; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && d == rMoves[1]))
-                                    && (!(testTile % 8 == 7 && d == rMoves[2]))
-                                    && (!(testTile < 8 && d == rMoves[0]))
-                                    && (!(testTile > 55 && d == rMoves[3])))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += rMoves[x - 4];
                                         if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
@@ -791,16 +602,13 @@ namespace test
                                     }
                                 }
                                 break;
-                            case 'q':
-                                foreach (int d in qkMoves)
+                        case 'q':
+                                for(int x = 0; x < 8; x++)
                                 {
                                     int testTile = i;
-                                    while ((!(testTile % 8 == 0 && (d == qkMoves[0] || d == qkMoves[2] || d == qkMoves[5])))
-                                    && (!(testTile % 8 == 7 && (d == qkMoves[1] || d == qkMoves[3] || d == qkMoves[6])))
-                                    && (!(testTile < 8 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                    && (!(testTile > 55 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[7]))))
+                                    for(int y = 0; y < distanceToEdge[x]; y++)
                                     {
-                                        testTile += d;
+                                        testTile += qkMoves[x];
                                         if ((char.IsLower(mainBoard[i]) && char.IsLower(mainBoard[testTile]))
                                         || (char.IsUpper(mainBoard[i]) && char.IsUpper(mainBoard[testTile])))
                                             break;
@@ -813,7 +621,6 @@ namespace test
                                 }
                                 break;
                         }
-                }
             }
             staleMate = true;
             return true;

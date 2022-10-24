@@ -121,5 +121,51 @@ namespace test
             }
             return char.Parse(onTurn == "w" ? s : s.ToUpper());
         }
+        public static int[] DistanceToEdge(int sPos)
+        {
+            return new int[]{
+                sPos % 8 > (sPos - (sPos % 8)) / 8 ? (sPos - (sPos % 8)) / 8 : sPos % 8,
+                7 - sPos % 8 > (sPos - (sPos % 8)) / 8 ? (sPos - (sPos % 8)) / 8 : 7 - sPos % 8,
+                7 - sPos % 8 > 7 - ((sPos - (sPos % 8)) / 8) ?  7 - ((sPos - (sPos % 8)) / 8) : 7 - sPos % 8,
+                sPos % 8 > 7 - ((sPos - (sPos % 8)) / 8) ?  7 - ((sPos - (sPos % 8)) / 8): sPos % 8,
+                (sPos - (sPos % 8)) / 8,
+                7 - sPos % 8,
+                7 - ((sPos - (sPos % 8)) / 8),
+                sPos % 8
+            };
+        }
+        public static bool[] LegalKnightMoves(int[] dte)
+        {
+            bool[] legalMoves = new bool[8];
+            if(dte[5] != 0)
+            {
+                if(dte[5] != 1)
+                {
+                    if(dte[4] != 0)
+                        legalMoves[2] = true;
+                    if(dte[6] != 0)
+                        legalMoves[3] = true;
+                }
+                if(dte[4] > 1)
+                    legalMoves[1] = true;
+                if(dte[6] > 1)
+                    legalMoves[4] = true;
+            }
+            if(dte[7] != 0)
+            {
+                if(dte[7] != 1)
+                {
+                    if(dte[4] != 0)
+                        legalMoves[7] = true;
+                    if(dte[6] != 0)
+                        legalMoves[6] = true;
+                }
+                if(dte[4] > 1)
+                    legalMoves[0] = true;
+                if(dte[6] > 1)
+                    legalMoves[5] = true;
+            }
+            return legalMoves;
+        }
     }
 }
