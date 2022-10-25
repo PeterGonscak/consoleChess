@@ -15,7 +15,7 @@ namespace test
         public static string midTileEdgeLarge = "    |    ";
         public static string tileEdgeLarge = "         |         |         |         |         |         |         |         |         | ";
         public static string line = "________________________________________________________________________________________________\n";
-        public static string mainFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ - 0 0"; //"1N1KQ1R1/PPPP2PP/5P2/5p2/7k/1BB5/pppp1NRp/rnbq1bnr b kqKQ - 0 0";
+        public static string mainFEN = "K7/8/7r/7q/7q/8/1R6/7k w - - 0 0";//"RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w kqKQ - 0 0"; //"1N1KQ1R1/PPPP2PP/5P2/5p2/7k/1BB5/pppp1NRp/rnbq1bnr b kqKQ - 0 0";
         public static bool large;
 
         
