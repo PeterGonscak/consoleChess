@@ -95,7 +95,7 @@ namespace test
         {
             return tileValues[s[0]] + tileValues[s[1]];
         }
-        public static string NumToTile(int i)
+        public static string NumToTile(int i) 
         {
             return numValues[i % 8].ToString() + rowValues[i - (i % 8)];
         }

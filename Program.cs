@@ -79,7 +79,7 @@
                 Random r = new Random();
                 if (ans == "r")
                     ans = "wb"[r.Next(2)].ToString();
-                AI ai = new AI(bw[1 - Array.IndexOf(bw, ans)]);
+                AI ai = new AI((1 - Array.IndexOf(bw, ans)) == 0);
                 while (gameOn)
                 {
                     Console.Clear();
@@ -98,7 +98,7 @@
                                 move = "" + Console.ReadLine();
                             }
                             else
-                                move = ai.PlayMove();
+                                move = ai.PlayMove(board, formatFEN);
                             if (move == "resign")
                             {
                                 gameOn = false;
@@ -322,7 +322,9 @@
         {
             int sPos = board.IndexOf(formatFEN[1] == "w" ? 'k' : 'K');
             foreach (int d in qkMoves)
-                if (sPos + d > -1 && sPos + d < 64 && IsValidGeneratedMove(board, sPos, sPos + d, formatFEN))
+                if (sPos + d > -1 && sPos + d < 64 && IsValidGeneratedMove(board, sPos, sPos + d, formatFEN) 
+                && (!((char.IsLower(board[sPos]) && char.IsLower(board[sPos + d]))
+                    || (char.IsUpper(board[sPos]) && char.IsUpper(board[sPos + d])))))
                     return false;
             for (int i = 0; i < 64; i++)
             {
@@ -362,7 +364,9 @@
                             bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
                             for (int x = 0; x < 8; x++)
                                 if (knightLegalMoves[x])
-                                    if (IsValidGeneratedMove(board, i, i + nMoves[x], formatFEN))
+                                    if (IsValidGeneratedMove(board, i, i + nMoves[x], formatFEN) 
+                                    && !((char.IsLower(board[i]) && char.IsLower(board[i + nMoves[x]]))
+                                        || (char.IsUpper(board[i]) && char.IsUpper(board[i + nMoves[x]]))))
                                         return false;
                             break;
                         case 'b':
