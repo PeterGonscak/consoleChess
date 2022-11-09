@@ -13,6 +13,9 @@
         static readonly string[] bw = new string[] { "w", "b" };
         static bool staleMate = false;
         static double[] score = new double[2] { 0, 0 };
+        static readonly int[][] distanceToEdge = Functions.DistanceToEdge();
+        static readonly bool[,] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
+
         static void Main()
         {
             string[] formatFEN = Graphics.StartDialog();
@@ -76,66 +79,65 @@
                 }
             else
             {
-                Random r = new Random();
-                if (ans == "r")
-                    ans = "wb"[r.Next(2)].ToString();
-                AI ai = new AI((1 - Array.IndexOf(bw, ans)) == 0);
-                while (gameOn)
-                {
-                    Console.Clear();
-                    Graphics.WriteHint();
-                    Graphics.WriteBoard(board, formatFEN);
-                    checks = checkChecker(board, formatFEN[1]);
-                    if (!CheckMateChecker(board, formatFEN, checks))
-                    {
-                        Console.WriteLine(formatFEN[1] + " to move.");
-                        while (true)
-                        {
-                            string move;
-                            if (formatFEN[1] == ans)
-                            {
-                                Console.Write("Enter a valid move: ");
-                                move = "" + Console.ReadLine();
-                            }
-                            else
-                                move = ai.PlayMove(board, formatFEN);
-                            if (move == "resign")
-                            {
-                                gameOn = false;
-                                break;
-                            }
-                            int sPos = Functions.TileToNum(move.Substring(0, 2));
-                            int ePos = Functions.TileToNum(move.Substring(2, 2));
-                            char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
-                            if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
-                            || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
-                            && IsValid(sPos, ePos, board, checks, formatFEN))
-                            {
-                                if (char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
-                                    formatFEN[4] = "0";
-                                else
-                                    formatFEN[4] = (int.Parse(formatFEN[4]) + 1).ToString();
-                                if ((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
-                                    board[sPos] = Functions.SelectPiece(formatFEN[1]);
-                                board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
-                                if (formatFEN[1] == "b")
-                                    formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
-                                formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
-                                formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
-                                formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        gameOn = false;
-                        if (staleMate)
-                            Console.WriteLine("StaleMate, its a draw.");
-                        else
-                            Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
-                    }
-                }
+                AI bot = new AI(5);
+                bot.PlayMove(board, formatFEN);
+                // Random r = new Random();
+                // if (ans == "r")
+                //     ans = "wb"[r.Next(2)].ToString();
+                // AI ai = new AI((1 - Array.IndexOf(bw, ans)) == 0);
+                // while (gameOn)
+                // {
+                //     Console.Clear();
+                //     Graphics.WriteHint();
+                //     Graphics.WriteBoard(board, formatFEN);
+                //     checks = checkChecker(board, formatFEN[1]);
+                //     if (!CheckMateChecker(board, formatFEN, checks))
+                //     {
+                //         Console.WriteLine(ans + " to move.");
+                //         while (true)
+                //         {
+                //             Console.Write("Enter a valid move: ");
+                //             string move = "" + Console.ReadLine();
+                //             if (move == "resign")
+                //             {
+                //                 gameOn = false;
+                //                 break;
+                //             }
+                //             try {
+                //                 int sPos = Functions.TileToNum(move.Substring(0, 2));
+                //                 int ePos = Functions.TileToNum(move.Substring(2, 2));
+                //                 char[] testBoard = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]);
+                //                 if (((formatFEN[1] == "w" && char.IsLower(board[sPos]))
+                //                 || (formatFEN[1] == "b" && char.IsUpper(board[sPos])))
+                //                 && IsValid(sPos, ePos, board, checks, formatFEN))
+                //                 {
+                //                     if (char.ToLower(board[sPos]) == 'p' || board[ePos] != ' ')
+                //                         formatFEN[4] = "0";
+                //                     else
+                //                         formatFEN[4] = (int.Parse(formatFEN[4]) + 1).ToString();
+                //                     if ((board[sPos] == 'p' && ePos < 8) || (board[sPos] == 'P' && ePos > 55))
+                //                         board[sPos] = Functions.SelectPiece(formatFEN[1]);
+                //                     board = ChangePiece(board.ToArray(), sPos, ePos, formatFEN[3]).ToList();
+                //                     if (formatFEN[1] == "b")
+                //                         formatFEN[5] = (int.Parse(formatFEN[5]) + 1).ToString();
+                //                     formatFEN[2] = CastlingRights(formatFEN[2], sPos, ePos, board);
+                //                     formatFEN[3] = ((sPos == ePos + 16 && sPos > 47) || (sPos == ePos - 16 && sPos < 16) ? Functions.NumToTile(ePos) : "-");
+                //                     formatFEN[1] = bw[1 - Array.IndexOf(bw, formatFEN[1])];
+                //                     break;
+                //                 }
+                //             }
+                //             catch { }
+                //         }
+                //     }
+                //     else
+                //     {
+                //         gameOn = false;
+                //         if (staleMate)
+                //             Console.WriteLine("StaleMate, its a draw.");
+                //         else
+                //             Console.WriteLine("CheckMate, " + (formatFEN[1] == "w" ? "black has won." : "white has won."));
+                //     }
+                // }
             }
         }
         static string CastlingRights(string s, int sPos, int ePos, List<char> board)
@@ -216,7 +218,7 @@
             board[sPos] = ' ';
             return board;
         }
-        static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string[] formatFEN)
+        public static bool IsValid(int sPos, int ePos, List<char> board, bool[] checkBoard, string[] formatFEN)
         {
             if (sPos == ePos)
                 return false;
@@ -224,26 +226,24 @@
             if ((formatFEN[1] == "w" && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'k')])
             || (formatFEN[1] == "b") && checkChecker(testBoard.ToList(), formatFEN[1])[Array.IndexOf(testBoard, 'K')])
                 return false;
-            int[] distanceToEdge = Functions.DistanceToEdge(sPos);
             if (board[sPos] == 'p')
                 return ((((sPos == ePos + 8 && sPos > 7) || (sPos == ePos + 16 && sPos > 47))
                     && board[ePos] == ' ' && (board[ePos + 8] == ' ' || !(sPos == ePos + 16)))
-                || (((sPos == ePos + 7 && distanceToEdge[5] != 0)
-                    || (sPos == ePos + 9 && distanceToEdge[7] != 0))
+                || (((sPos == ePos + 7 && distanceToEdge[sPos][5] != 0)
+                    || (sPos == ePos + 9 && distanceToEdge[sPos][7] != 0))
                         && (char.IsUpper(board[ePos]) || (formatFEN[3] != "-" && ePos + 8 == Functions.TileToNum(formatFEN[3])))));
             else if (board[sPos] == 'P')
                 return ((((sPos == ePos - 8 && sPos < 56) || (sPos == ePos - 16 && sPos < 16))
                     && board[ePos] == ' ' && (board[ePos - 8] == ' ' || !(sPos == ePos - 16)))
-                || (((sPos == ePos - 7 && distanceToEdge[7] != 0)
-                    || (sPos == ePos - 9 && distanceToEdge[5] != 0))
+                || (((sPos == ePos - 7 && distanceToEdge[sPos][7] != 0)
+                    || (sPos == ePos - 9 && distanceToEdge[sPos][5] != 0))
                         && (char.IsLower(board[ePos]) || (formatFEN[3] != "-" && ePos - 8 == Functions.TileToNum(formatFEN[3])))));
             else
                 switch (char.ToLower(board[sPos]))
                 {
                     case 'n':
-                        bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
                         for (int i = 0; i < 8; i++)
-                            if (knightLegalMoves[i])
+                            if (knightLegalMoves[sPos, i])
                                 if (sPos + nMoves[i] == ePos && (!(char.IsLower(board[sPos]) && char.IsLower(board[ePos]))
                                     || (char.IsUpper(board[sPos]) && char.IsUpper(board[ePos]))))
                                     return true;
@@ -253,7 +253,7 @@
                         for (int i = 0; i < 4; i++)
                         {
                             int testTile = sPos;
-                            for (int y = 0; y < distanceToEdge[i]; y++)
+                            for (int y = 0; y < distanceToEdge[sPos][i]; y++)
                             {
                                 testTile += bMoves[i];
                                 if (StopCheck(board, sPos, testTile, ePos))
@@ -267,7 +267,7 @@
                         for (int i = 4; i < 8; i++)
                         {
                             int testTile = sPos;
-                            for (int y = 0; y < distanceToEdge[i]; y++)
+                            for (int y = 0; y < distanceToEdge[sPos][i]; y++)
                             {
                                 testTile += rMoves[i - 4];
                                 if (StopCheck(board, sPos, testTile, ePos))
@@ -281,7 +281,7 @@
                         for (int i = 0; i < 8; i++)
                         {
                             int testTile = sPos;
-                            for (int y = 0; y < distanceToEdge[i]; y++)
+                            for (int y = 0; y < distanceToEdge[sPos][i]; y++)
                             {
                                 testTile += qkMoves[i];
                                 if (StopCheck(board, sPos, testTile, ePos))
@@ -292,10 +292,10 @@
                         }
                         return false;
                     case 'k':
-                        if ((!(distanceToEdge[7] == 0 && (qkMoves[0] == (ePos - sPos)
+                        if ((!(distanceToEdge[sPos][7] == 0 && (qkMoves[0] == (ePos - sPos)
                                                       || qkMoves[3] == (ePos - sPos)
                                                       || qkMoves[7] == (ePos - sPos))))
-                        && (!(distanceToEdge[5] == 0 && (qkMoves[1] == (ePos - sPos)
+                        && (!(distanceToEdge[sPos][5] == 0 && (qkMoves[1] == (ePos - sPos)
                                                       || qkMoves[2] == (ePos - sPos)
                                                       || qkMoves[5] == (ePos - sPos))))
                         && qkMoves.Contains(ePos - sPos) && !checkBoard[ePos]
@@ -330,14 +330,13 @@
             {
                 if (Functions.IsEnemy(formatFEN[1], board[i]) || board[i] == ' ')
                     continue;
-                int[] distanceToEdge = Functions.DistanceToEdge(i);
                 if (board[i] == 'p')
                 {
                     foreach (int m in pMoves[1])
                     {
                         if ((m == -16 && (i < 48 || board[i - 16] != ' ' || board[i - 8] != ' '))
                         || (m == -8 && board[i - 8] != ' ')
-                        || ((m == -9 && distanceToEdge[7] == 0) || (m == -7 && distanceToEdge[5] == 0)
+                        || ((m == -9 && distanceToEdge[i][7] == 0) || (m == -7 && distanceToEdge[i][5] == 0)
                         && !char.IsUpper((formatFEN[3] != "-" && i + m + 8 == Functions.TileToNum(formatFEN[3])) ? board[i + m + 8] : board[i + m])))
                             continue;
                         if (IsValidGeneratedMove(board, i, i + m, formatFEN))
@@ -350,7 +349,7 @@
                     {
                         if ((m == 16 && (i > 15 || board[i + 16] != ' ' || board[i + 8] != ' '))
                         || (m == 8 && board[i + 8] != ' ')
-                        || ((m == 7 && distanceToEdge[7] == 0) || (m == 9 && distanceToEdge[5] == 0)
+                        || ((m == 7 && distanceToEdge[i][7] == 0) || (m == 9 && distanceToEdge[i][5] == 0)
                         || !char.IsLower((formatFEN[3] != "-" && i + m - 8 == Functions.TileToNum(formatFEN[3])) ? board[i + m - 8] : board[i + m])))
                             continue;
                         if (IsValidGeneratedMove(board, i, i + m, formatFEN))
@@ -361,9 +360,8 @@
                     switch (char.ToLower(board[i]))
                     {
                         case 'n':
-                            bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
                             for (int x = 0; x < 8; x++)
-                                if (knightLegalMoves[x])
+                                if (knightLegalMoves[i, x])
                                     if (IsValidGeneratedMove(board, i, i + nMoves[x], formatFEN) 
                                     && !((char.IsLower(board[i]) && char.IsLower(board[i + nMoves[x]]))
                                         || (char.IsUpper(board[i]) && char.IsUpper(board[i + nMoves[x]]))))
@@ -373,7 +371,7 @@
                             for (int x = 0; x < 4; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += bMoves[x];
                                     if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
@@ -391,7 +389,7 @@
                             for (int x = 4; x < 8; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += rMoves[x - 4];
                                     if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
@@ -408,7 +406,7 @@
                             for (int x = 0; x < 8; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += qkMoves[x];
                                     if ((char.IsLower(board[i]) && char.IsLower(board[testTile]))
@@ -447,28 +445,26 @@
                 || (onTurn == "b" && char.IsUpper(board[i]))
                 || board[i] == ' ')
                     continue;
-                int[] distanceToEdge = Functions.DistanceToEdge(i);
                 if (board[i] == 'p' && i > 7)
                 {
-                    if (distanceToEdge[7] != 0)
+                    if (distanceToEdge[i][7] != 0)
                         checks[i - 9] = true;
-                    if (distanceToEdge[5] != 0)
+                    if (distanceToEdge[i][5] != 0)
                         checks[i - 7] = true;
                 }
                 else if (board[i] == 'P' && i < 56)
                 {
-                    if (distanceToEdge[7] != 0)
+                    if (distanceToEdge[i][7] != 0)
                         checks[i + 7] = true;
-                    if (distanceToEdge[5] != 0)
+                    if (distanceToEdge[i][5] != 0)
                         checks[i + 9] = true;
                 }
                 else
                     switch (char.ToLower(board[i]))
                     {
                         case 'n':
-                            bool[] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
                             for (int x = 0; x < 8; x++)
-                                if (knightLegalMoves[x])
+                                if (knightLegalMoves[i, x])
                                     checks[i + nMoves[x]] = true;
 
                             break;
@@ -476,7 +472,7 @@
                             for (int x = 0; x < 4; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += bMoves[x];
                                     checks[testTile] = true;
@@ -489,7 +485,7 @@
                             for (int x = 4; x < 8; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += rMoves[x - 4];
                                     checks[testTile] = true;
@@ -502,7 +498,7 @@
                             for (int x = 0; x < 8; x++)
                             {
                                 int testTile = i;
-                                for (int y = 0; y < distanceToEdge[x]; y++)
+                                for (int y = 0; y < distanceToEdge[i][x]; y++)
                                 {
                                     testTile += qkMoves[x];
                                     checks[testTile] = true;
@@ -514,10 +510,10 @@
                         case 'k':
                             foreach (int d in qkMoves)
                             {
-                                if ((!(distanceToEdge[7] == 0 && (d == qkMoves[0] || d == qkMoves[3] || d == qkMoves[7])))
-                                 && (!(distanceToEdge[5] == 0 && (d == qkMoves[1] || d == qkMoves[2] || d == qkMoves[5])))
-                                 && (!(distanceToEdge[4] == 0 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
-                                 && (!(distanceToEdge[6] == 0 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[6]))))
+                                if ((!(distanceToEdge[i][7] == 0 && (d == qkMoves[0] || d == qkMoves[3] || d == qkMoves[7])))
+                                 && (!(distanceToEdge[i][5] == 0 && (d == qkMoves[1] || d == qkMoves[2] || d == qkMoves[5])))
+                                 && (!(distanceToEdge[i][4] == 0 && (d == qkMoves[0] || d == qkMoves[1] || d == qkMoves[4])))
+                                 && (!(distanceToEdge[i][6] == 0 && (d == qkMoves[2] || d == qkMoves[3] || d == qkMoves[6]))))
                                     checks[i + d] = true;
                             }
                             break;

@@ -121,51 +121,58 @@ namespace test
             }
             return char.Parse(onTurn == "w" ? s : s.ToUpper());
         }
-        public static int[] DistanceToEdge(int sPos)
+        public static int[][] DistanceToEdge()
         {
-            return new int[]{
-                sPos % 8 > (sPos - (sPos % 8)) / 8 ? (sPos - (sPos % 8)) / 8 : sPos % 8,
-                7 - sPos % 8 > (sPos - (sPos % 8)) / 8 ? (sPos - (sPos % 8)) / 8 : 7 - sPos % 8,
-                7 - sPos % 8 > 7 - ((sPos - (sPos % 8)) / 8) ?  7 - ((sPos - (sPos % 8)) / 8) : 7 - sPos % 8,
-                sPos % 8 > 7 - ((sPos - (sPos % 8)) / 8) ?  7 - ((sPos - (sPos % 8)) / 8): sPos % 8,
-                (sPos - (sPos % 8)) / 8,
-                7 - sPos % 8,
-                7 - ((sPos - (sPos % 8)) / 8),
-                sPos % 8
+            int[][] board = new int[64][];
+            for(int i = 0; i < 64; i++)
+                board[i] =  new int[]{
+                i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : i % 8,
+                7 - i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : 7 - i % 8,
+                7 - i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8) : 7 - i % 8,
+                i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8): i % 8,
+                (i - (i % 8)) / 8,
+                7 - i % 8,
+                7 - ((i - (i % 8)) / 8),
+                i % 8
             };
+            return board;
+           
         }
-        public static bool[] LegalKnightMoves(int[] dte)
+        public static bool[,] LegalKnightMoves(int[][] dte)
         {
-            bool[] legalMoves = new bool[8];
-            if(dte[5] != 0)
+            bool[,] legalMoves = new bool[64,8];
+            for(int i = 0; i < 64; i++)
             {
-                if(dte[5] != 1)
+            if(dte[i][5] != 0)
+            {
+                if(dte[i][5] != 1)
                 {
-                    if(dte[4] != 0)
-                        legalMoves[2] = true;
-                    if(dte[6] != 0)
-                        legalMoves[3] = true;
+                    if(dte[i][4] != 0)
+                        legalMoves[i, 2] = true;
+                    if(dte[i][6] != 0)
+                        legalMoves[i, 3] = true;
                 }
-                if(dte[4] > 1)
-                    legalMoves[1] = true;
-                if(dte[6] > 1)
-                    legalMoves[4] = true;
+                if(dte[i][4] > 1)
+                    legalMoves[i, 1] = true;
+                if(dte[i][6] > 1)
+                    legalMoves[i, 4] = true;
             }
-            if(dte[7] != 0)
+            if(dte[i][7] != 0)
             {
-                if(dte[7] != 1)
+                if(dte[i][7] != 1)
                 {
-                    if(dte[4] != 0)
-                        legalMoves[7] = true;
-                    if(dte[6] != 0)
-                        legalMoves[6] = true;
+                    if(dte[i][4] != 0)
+                        legalMoves[i, 7] = true;
+                    if(dte[i][6] != 0)
+                        legalMoves[i, 6] = true;
                 }
-                if(dte[4] > 1)
-                    legalMoves[0] = true;
-                if(dte[6] > 1)
-                    legalMoves[5] = true;
+                if(dte[i][4] > 1)
+                    legalMoves[i, 0] = true;
+                if(dte[i][6] > 1)
+                    legalMoves[i, 5] = true;
+            }
             }
             return legalMoves;
-        }
+           }
     }
 }
