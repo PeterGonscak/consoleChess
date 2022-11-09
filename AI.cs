@@ -113,20 +113,6 @@ namespace test
             board.Add(FENstring[2].Contains('Q') ? 1 : 0);
             board.Add(FENstring[3] != "-" ? Functions.TileToNum(FENstring[3]) : -999);
             Graphics.WriteBoard(position, FENstring);
-            // bool[] checks = CheckChecker(board.ToArray());
-            //         for(int i = 0; i < 64; i++)
-            //         {
-            //             if(i % 8 == 0)
-            //                 Console.WriteLine("");
-            //             Console.Write(checks[i] ? " X "  : "   ");
-            //         }
-            //         System.Console.Write("\n "+ board.Count() + " ");
-            //         for(int i = 0; i < board.Count(); i++)
-            //         {
-            //             Console.Write(board[i] + " ");
-            //             if(i % 8 == 0)
-            //                 Console.WriteLine("");
-            //         }
             Stopwatch timer = new Stopwatch();
             timer.Start();
             for (int i = 0; i < 5; i++)
@@ -223,8 +209,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + nMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                 }
                             break;
                         case 2:                                                                                     //bishop
@@ -245,8 +229,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + bMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -270,8 +252,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + rMoves[x - 4]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -295,8 +275,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + qkMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -330,8 +308,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], 60, 58});
-                                    //allPositions[1].Add(testBoard);
                                 }
                                 if (board[65] == 1 && (!checkBoard[61]) && (!checkBoard[62])
                                 && board[61] == 6 && board[62] == 6)
@@ -343,8 +319,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], 60, 62});
-                                    //allPositions[1].Add(testBoard);
                                 }
                             }
                             break;
@@ -431,8 +405,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + nMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                 }
                             break;
                         case 9:                                                                                     //bishop
@@ -453,8 +425,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + bMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -478,8 +448,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + rMoves[x - 4]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -503,8 +471,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], i, i + qkMoves[x]});
-                                    //allPositions[1].Add(testBoard);
                                     if (board[testTile] != 6)
                                         break;
                                 }
@@ -538,8 +504,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], 4, 2});
-                                    //allPositions[1].Add(testBoard);
                                 }
                                 if (board[67] == 1 && (!checkBoard[5]) && (!checkBoard[6])
                                 && board[5] == 6 && board[6] == 6)
@@ -551,8 +515,6 @@ namespace test
                                     }
                                     else
                                         counter++;
-                                    //allPositions[0].Add(new int[] {board[i], 4, 6});
-                                    //allPositions[1].Add(testBoard);
                                 }
                             }
                             break;
@@ -649,8 +611,6 @@ namespace test
             double eval = 0;
             for (int i = 0; i < 64; i++)
             {
-                // valueWeights[board[i] % 7];
-
             }
             return eval;
         }
