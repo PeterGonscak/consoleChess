@@ -153,9 +153,6 @@ namespace test
                     switch (board[i])
                     {
                         case 0:                                                                                    //pawn
-                            if(!(board[i + 1] == board[69]
-                                && distanceToEdge[i][5] != 0))
-                                    iHateMyLife.Add(new bool[] {board[i + 1] == board[69], distanceToEdge[i][5] != 0});
                             if (i > 47 && board[i - 16] == 6 && board[i - 8] == 6)
                             {
                                 int[] testBoard = MakeMove(i, i - 16, board);
@@ -180,7 +177,7 @@ namespace test
                                 else
                                     counter++;
                             }
-                            if ((board[i - 9] > 6 || board[i - 1] == board[69])
+                            if ((board[i - 9] > 6 || i - 1 == board[69])
                                 && distanceToEdge[i][7] != 0)
                             {
                                 if(board[i - 1] == board[69]
@@ -196,7 +193,7 @@ namespace test
                                 else
                                     counter++;
                             }
-                            if ((board[i - 7] > 6 || board[i + 1] == board[69])
+                            if ((board[i - 7] > 6 || i + 1 == board[69])
                                 && distanceToEdge[i][5] != 0)
                             {
                                 if(board[i + 1] == board[69]
@@ -388,7 +385,7 @@ namespace test
                                 else
                                     counter++;
                             }
-                            if ((board[i + 9] < 6 || board[i + 1] == board[69])
+                            if ((board[i + 9] < 6 || i + 1 == board[69])
                                 && distanceToEdge[i][5] != 0)
                             {
                                 if(board[i + 1] == board[69]
@@ -404,7 +401,7 @@ namespace test
                                 else
                                     counter++;
                             }
-                            if ((board[i + 7] < 6 || board[i - 1] == board[69])
+                            if ((board[i + 7] < 6 || i - 1 == board[69])
                                 && distanceToEdge[i][7] != 0)
                             {
                                 if(board[i - 1] == board[69]
