@@ -92,14 +92,14 @@ namespace test
             {2, 3}, {9, -3},
             {3, 5}, {10, -5},
             {4, 9}, {11, -9},
-            {5, 1}, {12, -1}
+            {5, 999}, {12, -999}
         };
         public AI(int depth)
         {
             this.depth = depth;
         }
         public Dictionary<int[], int> moves = new Dictionary<int[], int>();
-        int checkCounter = 0;
+        int enPCounter = 0;
         int enPc = 0;
         List<bool[]> iHateMyLife = new List<bool[]>();
 
@@ -134,7 +134,7 @@ namespace test
                 Console.WriteLine((i + 1) + ". move: " + FindAllMoves(board.ToArray(), i) + $"  Time: {timer.ElapsedMilliseconds} ms.");
             }
             timer.Stop();
-            Console.WriteLine(checkCounter);
+            Console.WriteLine(enPCounter);
             Console.WriteLine(enPc);
             foreach(var item in iHateMyLife)
                 System.Console.WriteLine(item[0] + " " + item[1]);
@@ -155,7 +155,7 @@ namespace test
                         case 0:                                                                                    //pawn
                             if(!(board[i + 1] == board[69]
                                 && distanceToEdge[i][5] != 0))
-                                    iHateMyLife.Add(new bool[] {board[i + 1] == board[69], distanceToEdge[i][5] != 0} );
+                                    iHateMyLife.Add(new bool[] {board[i + 1] == board[69], distanceToEdge[i][5] != 0});
                             if (i > 47 && board[i - 16] == 6 && board[i - 8] == 6)
                             {
                                 int[] testBoard = MakeMove(i, i - 16, board);
@@ -185,7 +185,7 @@ namespace test
                             {
                                 if(board[i - 1] == board[69]
                                 && distanceToEdge[i][7] != 0)
-                                    checkCounter++;
+                                    enPCounter++;
                                 int[] testBoard = MakeMove(i, i - 9, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
@@ -201,7 +201,7 @@ namespace test
                             {
                                 if(board[i + 1] == board[69]
                                 && distanceToEdge[i][5] != 0)
-                                    checkCounter++;
+                                    enPCounter++;
                                 int[] testBoard = MakeMove(i, i - 7, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
@@ -393,7 +393,7 @@ namespace test
                             {
                                 if(board[i + 1] == board[69]
                                 && distanceToEdge[i][5] != 0)
-                                    checkCounter++;
+                                    enPCounter++;
                                 int[] testBoard = MakeMove(i, i + 9, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
@@ -409,7 +409,7 @@ namespace test
                             {
                                 if(board[i - 1] == board[69]
                                 && distanceToEdge[i][7] != 0)
-                                    checkCounter++;
+                                    enPCounter++;
                                 int[] testBoard = MakeMove(i, i + 7, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
@@ -702,7 +702,7 @@ namespace test
             board[66] = board[66] != 0 && board[56] == 3 ? 1 : 0;
             board[67] = board[67] != 0 && board[7] == 10 ? 1 : 0;
             board[68] = board[68] != 0 && board[0] == 10 ? 1 : 0;
-            if (sPos - ePos == 16 || ePos - sPos == 16)
+            if ((sPos - ePos == 16 || ePos - sPos == 16) && board[sPos] % 7 == 0)
                 board[69] = ePos;
             else
                 board[69] = -999;
