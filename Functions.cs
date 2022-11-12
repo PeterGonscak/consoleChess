@@ -55,13 +55,13 @@ namespace test
         };
         public static bool IsEnemy(string onTurn, char piece)
         {
-            return (onTurn == "b" && char.IsLower(piece))
-                || (onTurn == "w" && char.IsUpper(piece));
+            return (onTurn == "w" && char.IsLower(piece))
+                || (onTurn == "b" && char.IsUpper(piece));
         }
         public static bool IsFriend(string onTurn, char piece)
         {
-            return (onTurn == "w" && char.IsLower(piece))
-                || (onTurn == "b" && char.IsUpper(piece));
+            return (onTurn == "b" && char.IsLower(piece))
+                || (onTurn == "w" && char.IsUpper(piece));
         }
         public static int Eval(List<char> board)
         {
@@ -119,29 +119,28 @@ namespace test
                 Console.Write("Type to which piece do you want to promote the pawn. [n / b / r / q]: ");
                 s = "" + Console.ReadLine();
             }
-            return char.Parse(onTurn == "w" ? s : s.ToUpper());
+            return char.Parse(onTurn == "b" ? s : s.ToUpper());
         }
-        public static int[][] DistanceToEdge()
+        public static byte[][] DistanceToEdge()
         {
-            int[][] board = new int[64][];
-            for(int i = 0; i < 64; i++)
-                board[i] =  new int[]{
-                i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : i % 8,
-                7 - i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : 7 - i % 8,
-                7 - i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8) : 7 - i % 8,
-                i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8): i % 8,
-                (i - (i % 8)) / 8,
-                7 - i % 8,
-                7 - ((i - (i % 8)) / 8),
-                i % 8
+            byte[][] board = new byte[64][];
+            for(byte i = 0; i < 64; i++)
+                board[i] =  new byte[]{
+                (byte)(i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : i % 8),
+                (byte)(7 - i % 8 > (i - (i % 8)) / 8 ? (i - (i % 8)) / 8 : 7 - i % 8),
+                (byte)(7 - i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8) : 7 - i % 8),
+                (byte)(i % 8 > 7 - ((i - (i % 8)) / 8) ?  7 - ((i - (i % 8)) / 8): i % 8),
+                (byte)((i - (i % 8)) / 8),
+                (byte)(7 - i % 8),
+                (byte)(7 - ((i - (i % 8)) / 8)),
+                (byte)(i % 8)
             };
             return board;
-           
         }
-        public static bool[,] LegalKnightMoves(int[][] dte)
+        public static bool[,] LegalKnightMoves(byte[][] dte)
         {
             bool[,] legalMoves = new bool[64,8];
-            for(int i = 0; i < 64; i++)
+            for(byte i = 0; i < 64; i++)
             {
             if(dte[i][5] != 0)
             {

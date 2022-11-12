@@ -3,49 +3,58 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace test
 {
+    public struct Move
+    {
+        public byte startingTile;
+        public byte landingTile;
+        public Move(byte sTile, byte lTile)
+        {
+            startingTile = sTile;
+            landingTile = lTile;
+        }
+    }
     public class AI
     {
-        static readonly int[][] distanceToEdge = Functions.DistanceToEdge();
+        static readonly byte[][] distanceToEdge = Functions.DistanceToEdge();
         readonly bool[,] knightLegalMoves = Functions.LegalKnightMoves(distanceToEdge);
-        readonly int depth = 5;
-        readonly int[] bpMoves = new int[] { 7, 8, 9, 16 };
-        readonly int[] wpMoves = new int[] { -7, -8, -9, -16 };
-        readonly int[] nMoves = new int[] { -17, -15, -6, 10, 17, 15, 6, -10 };
-        readonly int[] bMoves = new int[4] { -9, -7, 9, 7 };
-        readonly int[] rMoves = new int[4] { -8, 1, 8, -1 };
-        readonly int[] qkMoves = new int[8] { -9, -7, 9, 7, -8, 1, 8, -1 };
+        readonly int depth;
+        readonly SByte[] nMoves = new SByte[] { -17, -15, -6, 10, 17, 15, 6, -10 };
+        readonly SByte[] bMoves = new SByte[4] { -9, -7, 9, 7 };
+        readonly SByte[] rMoves = new SByte[4] { -8, 1, 8, -1 };
+        readonly SByte[] qkMoves = new SByte[8] { -9, -7, 9, 7, -8, 1, 8, -1 };
 
-        readonly int[][] pTiles = new int[][]{
-            new int[]{27, 28, 34, 35, 36, 37},
-            new int[]{33, 26, 19, 20, 29, 38, 42, 43, 44, 45}
+        readonly byte[][] pTiles = new byte[][]{
+            new byte[]{27, 28, 34, 35, 36, 37},
+            new byte[]{33, 26, 19, 20, 29, 38, 42, 43, 44, 45}
         };
-        readonly int[][] nTiles = new int[][]{
-            new int[]{27, 28, 35, 36},
-            new int[]{19, 20, 26, 29, 34, 37, 43, 44},
-            new int[]{11, 12, 21, 30, 38, 45, 52, 51, 42, 33, 25, 18},
+        readonly byte[][] nTiles = new byte[][]{
+            new byte[]{27, 28, 35, 36},
+            new byte[]{19, 20, 26, 29, 34, 37, 43, 44},
+            new byte[]{11, 12, 21, 30, 38, 45, 52, 51, 42, 33, 25, 18},
         };
-        readonly int[][] bTiles = new int[][]{
-            new int[]{41, 42, 49, 50, 45, 46, 53, 54},
-            new int[]{33, 34, 37, 38},
-            new int[]{40, 48, 47, 55}
+        readonly byte[][] bTiles = new byte[][]{
+            new byte[]{41, 42, 49, 50, 45, 46, 53, 54},
+            new byte[]{33, 34, 37, 38},
+            new byte[]{40, 48, 47, 55}
         };
-        readonly int[][] rTiles = new int[][] {
-            new int[]{58, 59, 60, 61},
-            new int[]{57, 62}
+        readonly byte[][] rTiles = new byte[][] {
+            new byte[]{58, 59, 60, 61},
+            new byte[]{57, 62}
         };
-        readonly int[][] qTiles = new int[][]{
-            new int[]{41, 42, 45, 46, 49, 50, 51, 52, 53, 54},
-            new int[]{33, 34, 35, 36, 37, 38, 43, 44},
+        readonly byte[][] qTiles = new byte[][]{
+            new byte[]{41, 42, 45, 46, 49, 50, 51, 52, 53, 54},
+            new byte[]{33, 34, 35, 36, 37, 38, 43, 44},
         };
-        readonly int[][] kTiles = new int[][]{
-            new int[]{56, 57, 62, 63},
-            new int[]{48, 49, 58, 61, 54, 55}
+        readonly byte[][] kTiles = new byte[][]{
+            new byte[]{56, 57, 62, 63},
+            new byte[]{48, 49, 58, 61, 54, 55}
         };
 
-        readonly Dictionary<int, double[]> valueWeights = new Dictionary<int, double[]>(){
+        readonly Dictionary<byte, double[]> valueWeights = new Dictionary<byte, double[]>(){
             {0, new double[]{0.2, 0.1}},
             {1, new double[]{0.7, 0.3, 0.1}},
             {2, new double[]{0.7, 0.5, 0.1}},
@@ -53,7 +62,7 @@ namespace test
             {4, new double[]{0.5, 0.2}},
             {5, new double[]{0.7, 0.3}}
         };
-        readonly Dictionary<int, char> numToPiece = new Dictionary<int, char>()
+        readonly Dictionary<byte, char> numToPiece = new Dictionary<byte, char>()
         {
             {0, ' '},
             {1, 'p'},
@@ -69,24 +78,24 @@ namespace test
             {11, 'Q'},
             {12, 'K'}
         };
-        readonly Dictionary<char, int> pieceToNum = new Dictionary<char, int>()
+        readonly Dictionary<char, byte> pieceToNum = new Dictionary<char, byte>()
         {
 
-            {'p', 0},
-            {'n', 1},
-            {'b', 2},
-            {'r', 3},
-            {'q', 4},
-            {'k', 5},
+            {'P', 0},
+            {'N', 1},
+            {'B', 2},
+            {'R', 3},
+            {'Q', 4},
+            {'K', 5},
             {' ', 6},
-            {'P', 7},
-            {'N', 8},
-            {'B', 9},
-            {'R', 10},
-            {'Q', 11},
-            {'K', 12}
+            {'p', 7},
+            {'n', 8},
+            {'b', 9},
+            {'r', 10},
+            {'q', 11},
+            {'k', 12}
         };
-        readonly Dictionary<int, int> pieceValues = new Dictionary<int, int>(){
+        readonly Dictionary<byte, Int16> pieceValues = new Dictionary<byte, Int16>(){
             {0, 1}, {7, -1},
             {1, 3}, {8, -3},
             {2, 3}, {9, -3},
@@ -98,20 +107,18 @@ namespace test
         {
             this.depth = depth;
         }
-        public Dictionary<int[], int> moves = new Dictionary<int[], int>();
-        int enPCounter = 0;
-        int enPc = 0;
-        List<bool[]> iHateMyLife = new List<bool[]>();
 
         public void PlayMove(List<char> position, string[] FENstring)
         {
-            List<int> board = ConvertList(position);
-            board.Add(FENstring[1] == "w" ? 0 : 1);
-            board.Add(FENstring[2].Contains('k') ? 1 : 0);
-            board.Add(FENstring[2].Contains('q') ? 1 : 0);
-            board.Add(FENstring[2].Contains('K') ? 1 : 0);
-            board.Add(FENstring[2].Contains('Q') ? 1 : 0);
-            board.Add(FENstring[3] != "-" ? Functions.TileToNum(FENstring[3]) : -999);
+            List<byte> board = ConvertList(position);
+            board.Add((byte)(FENstring[1] == "w" ? 0 : 1));
+            board.Add((byte)(FENstring[2].Contains('k') ? 1 : 0));
+            board.Add((byte)(FENstring[2].Contains('q') ? 1 : 0));
+            board.Add((byte)(FENstring[2].Contains('K') ? 1 : 0));
+            board.Add((byte)(FENstring[2].Contains('Q') ? 1 : 0));
+            board.Add((byte)(FENstring[3] != "-" ? Functions.TileToNum(FENstring[3]) : 255));
+            board.Add((byte)int.Parse(FENstring[4]));
+            board.Add((byte)int.Parse(FENstring[5]));
             Graphics.WriteBoard(position, FENstring);
             Stopwatch timer = new Stopwatch();
             timer.Start();
@@ -120,28 +127,30 @@ namespace test
                 Console.WriteLine((i + 1) + ". move: " + FindAllMoves(board.ToArray(), i) + $"  Time: {timer.ElapsedMilliseconds} ms.");
             }
             timer.Stop();
-            Console.WriteLine(enPCounter);
-            Console.WriteLine(enPc);
-            foreach(var item in iHateMyLife)
-                System.Console.WriteLine(item[0] + " " + item[1]);
-            System.Console.WriteLine(iHateMyLife.Count());
         }
-        public int FindAllMoves(int[] board, int depth)
+        public int FindAllMoves(byte[] board, int depth)
         {
             int counter = 0;
             if (board[64] == 0)                                                                                     //white
             {
-                int kingTile = Array.IndexOf(board, 5);
-                for (int i = 0; i < 64; i++)
+                byte kingTile = (byte)(Array.IndexOf(board, (byte)5));
+                for (byte i = 0; i < 64; i++)
                 {
                     if (board[i] > 5)
                         continue;
                     switch (board[i])
                     {
                         case 0:                                                                                    //pawn
-                            if (i > 47 && board[i - 16] == 6 && board[i - 8] == 6)
+                            sbyte[] wpTiles = {
+                                (sbyte)(i - 8),
+                                (sbyte)(i - 16),
+                                (sbyte)(i - 9),
+                                (sbyte)(i - 7),
+                            };
+                            if (board[wpTiles[0]] == 6)
                             {
-                                int[] testBoard = MakeMove(i, i - 16, board);
+                                Move move = new Move(i, (byte)(wpTiles[0]));
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
@@ -150,26 +159,25 @@ namespace test
                                 }
                                 else
                                     counter++;
-                            }
-                            if (board[i - 8] == 6)
-                            {
-                                int[] testBoard = MakeMove(i, i - 8, board);
-                                if (CheckChecker(testBoard)[kingTile])
-                                    continue;
-                                if (depth != 0)
+                                if (i > 47 && board[wpTiles[1]] == 6)
                                 {
-                                    counter += FindAllMoves(testBoard, depth - 1);
+                                    move.landingTile -= 8;
+                                    testBoard = MakeMove(move, board);
+                                    if (CheckChecker(testBoard)[kingTile])
+                                        continue;
+                                    if (depth != 0)
+                                    {
+                                        counter += FindAllMoves(testBoard, depth - 1);
+                                    }
+                                    else
+                                        counter++;
                                 }
-                                else
-                                    counter++;
                             }
-                            if ((board[i - 9] > 6 || i - 1 == board[69])
+                            if ((board[wpTiles[2]] > 6 || wpTiles[2] == board[69])
                                 && distanceToEdge[i][7] != 0)
                             {
-                                if(board[i - 1] == board[69]
-                                && distanceToEdge[i][7] != 0)
-                                    enPCounter++;
-                                int[] testBoard = MakeMove(i, i - 9, board);
+                                Move move = new Move(i, (byte)(wpTiles[2]));
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
@@ -179,13 +187,11 @@ namespace test
                                 else
                                     counter++;
                             }
-                            if ((board[i - 7] > 6 || i + 1 == board[69])
+                            if ((board[wpTiles[3]] > 6 || wpTiles[3] == board[69])
                                 && distanceToEdge[i][5] != 0)
                             {
-                                if(board[i + 1] == board[69]
-                                && distanceToEdge[i][5] != 0)
-                                    enPCounter++;
-                                int[] testBoard = MakeMove(i, i - 7, board);
+                                Move move = new Move(i, (byte)(wpTiles[3]));
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
@@ -197,10 +203,11 @@ namespace test
                             }
                             break;
                         case 1:                                                                                     //knight
-                            for (int x = 0; x < 8; x++)
+                            for (byte x = 0; x < 8; x++)
                                 if (knightLegalMoves[i, x] && board[i + nMoves[x]] > 5)
                                 {
-                                    int[] testBoard = MakeMove(i, i + nMoves[x], board);
+                                    Move move = new Move(i, (byte)(i + nMoves[x]));
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -212,15 +219,16 @@ namespace test
                                 }
                             break;
                         case 2:                                                                                     //bishop
-                            for (int x = 0; x < 4; x++)
+                            for (byte x = 0; x < 4; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += bMoves[x];
+                                    testTile = (byte)(testTile + bMoves[x]);
                                     if (board[testTile] < 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + bMoves[x], board);
+                                    Move move = new Move(i, (byte)(i + bMoves[x]));
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -235,15 +243,16 @@ namespace test
                             }
                             break;
                         case 3:                                                                                     //rook
-                            for (int x = 4; x < 8; x++)
+                            for (byte x = 4; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += rMoves[x - 4];
+                                    testTile = (byte)(testTile + rMoves[x - 4]);
                                     if (board[testTile] < 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + rMoves[x - 4], board);
+                                    Move move = new Move(i, (byte)(i + rMoves[x - 4]));
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -258,15 +267,16 @@ namespace test
                             }
                             break;
                         case 4:                                                                                     //queen
-                            for (int x = 0; x < 8; x++)
+                            for (byte x = 0; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += qkMoves[x];
+                                    testTile = (byte)(testTile + qkMoves[x]);
                                     if (board[testTile] < 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + qkMoves[x], board);
+                                    Move move = new Move(i, (byte)(i + qkMoves[x]));
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -281,17 +291,19 @@ namespace test
                             }
                             break;
                         case 5:                                                                                     //king
-                            foreach (int move in qkMoves)
+                            foreach (sbyte kMove in qkMoves)
                             {
-                                if (i + move < 0 || i + move > 63 || board[i + move] < 6)
+                                sbyte testTile = (sbyte)(i + kMove);
+                                if (testTile < 0 || testTile > 63 || board[testTile] < 6)
                                     continue;
-                                int[] testBoard = MakeMove(i, i + move, board);
-                                if (CheckChecker(testBoard)[i + move])
+                                Move move = new Move(i, (byte)testTile);
+                                byte[] testBoard = MakeMove(move, board);
+                                if (CheckChecker(testBoard)[testTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
@@ -299,9 +311,10 @@ namespace test
                             if (!checkBoard[60])
                             {
                                 if (board[66] == 1 && (!checkBoard[59]) && (!checkBoard[58])
-                                && board[59] == 6 && board[58] == 6)
+                                && board[59] == 6 && board[58] == 6 && board[57] == 6)
                                 {
-                                    int[] testBoard = MakeMove(60, 58, board);
+                                    Move move = new Move(60, 58);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (depth != 0)
                                     {
                                         counter += FindAllMoves(testBoard, depth - 1);
@@ -312,7 +325,8 @@ namespace test
                                 if (board[65] == 1 && (!checkBoard[61]) && (!checkBoard[62])
                                 && board[61] == 6 && board[62] == 6)
                                 {
-                                    int[] testBoard = MakeMove(60, 62, board);
+                                    Move move = new Move(60, 62);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (depth != 0)
                                     {
                                         counter += FindAllMoves(testBoard, depth - 1);
@@ -327,76 +341,83 @@ namespace test
             }
             else                                                                                                //black
             {
-                int  kingTile = Array.IndexOf(board, 12);
-                for (int i = 0; i < 64; i++)
+                byte kingTile = (byte)Array.IndexOf(board, (byte)12);
+                for (byte i = 0; i < 64; i++)
                 {
                     if (board[i] < 7)
                         continue;
                     switch (board[i])
                     {
                         case 7:                                                                                     //pawn
-                            if (i < 16 && board[i + 16] == 6 && board[i + 8] == 6)
+                            sbyte[] bpTiles = {
+                                (sbyte)(i + 8),
+                                (sbyte)(i + 16),
+                                (sbyte)(i + 9),
+                                (sbyte)(i + 7),
+                            };
+                            if (i < 16 && board[bpTiles[1]] == 6 && board[bpTiles[0]] == 6)
                             {
-                                int[] testBoard = MakeMove(i, i + 16, board);
+                                Move move = new Move(i, (byte)bpTiles[1]);
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
-                            if (board[i + 8] == 6)
+                            if (board[bpTiles[0]] == 6)
                             {
-                                int[] testBoard = MakeMove(i, i + 8, board);
+                                Move move = new Move(i, (byte)bpTiles[0]);
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
-                            if ((board[i + 9] < 6 || i + 1 == board[69])
-                                && distanceToEdge[i][5] != 0)
+                            if (distanceToEdge[i][5] != 0 
+                            && (board[bpTiles[2]] < 6 || bpTiles[2] == board[69]))
                             {
-                                if(board[i + 1] == board[69]
-                                && distanceToEdge[i][5] != 0)
-                                    enPCounter++;
-                                int[] testBoard = MakeMove(i, i + 9, board);
+                                Move move = new Move(i, (byte)bpTiles[2]);
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
-                            if ((board[i + 7] < 6 || i - 1 == board[69])
-                                && distanceToEdge[i][7] != 0)
+                            if (distanceToEdge[i][7] != 0 
+                            && (board[bpTiles[3]] < 6 || bpTiles[3] == board[69]))
                             {
-                                if(board[i - 1] == board[69]
-                                && distanceToEdge[i][7] != 0)
-                                    enPCounter++;
-                                int[] testBoard = MakeMove(i, i + 7, board);
+                                Move move = new Move(i, (byte)bpTiles[3]);
+                                byte[] testBoard = MakeMove(move, board);
                                 if (CheckChecker(testBoard)[kingTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
                             break;
                         case 8:                                                                                     //knight
-                            for (int x = 0; x < 8; x++)
-                                if (knightLegalMoves[i, x] && board[i + nMoves[x]] < 7)
+                            for (byte x = 0; x < 8; x++)
+                            {
+                                byte testTile = (byte)(i + nMoves[x]);
+                                if (knightLegalMoves[i, x] && board[testTile] < 7)
                                 {
-                                    int[] testBoard = MakeMove(i, i + nMoves[x], board);
+                                    Move move = new Move(i, testTile);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -406,17 +427,19 @@ namespace test
                                     else
                                         counter++;
                                 }
+                            }
                             break;
                         case 9:                                                                                     //bishop
-                            for (int x = 0; x < 4; x++)
+                            for (byte x = 0; x < 4; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += bMoves[x];
+                                    testTile = (byte)(testTile + bMoves[x]);
                                     if (board[testTile] > 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + bMoves[x], board);
+                                    Move move = new Move(i, testTile);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -431,15 +454,16 @@ namespace test
                             }
                             break;
                         case 10:                                                                                     //rook
-                            for (int x = 4; x < 8; x++)
+                            for (byte x = 4; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += rMoves[x - 4];
+                                    testTile = (byte)(testTile + rMoves[x - 4]);
                                     if (board[testTile] > 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + rMoves[x - 4], board);
+                                    Move move = new Move(i, testTile);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -454,15 +478,16 @@ namespace test
                             }
                             break;
                         case 11:                                                                                     //queen
-                            for (int x = 0; x < 8; x++)
+                            for (byte x = 0; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += qkMoves[x];
+                                    testTile = (byte)(testTile + qkMoves[x]);
                                     if (board[testTile] > 6)
                                         break;
-                                    int[] testBoard = MakeMove(i, i + qkMoves[x], board);
+                                    Move move = new Move(i, testTile);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (CheckChecker(testBoard)[kingTile])
                                         continue;
                                     if (depth != 0)
@@ -477,17 +502,19 @@ namespace test
                             }
                             break;
                         case 12:                                                                                     //king
-                            foreach (int move in qkMoves)
+                            foreach (sbyte kMove in qkMoves)
                             {
-                                if (i + move < 0 || i + move > 63 || board[i + move] > 6)
+                                sbyte testTile = (sbyte)(i + kMove);
+                                if (testTile < 0 || testTile > 63 || board[testTile] > 6)
                                     continue;
-                                int[] testBoard = MakeMove(i, i + move, board);
-                                if (CheckChecker(testBoard)[i + move])
+                                Move move = new Move(i, (byte)testTile);
+                                byte[] testBoard = MakeMove(move, board);
+                                if (CheckChecker(testBoard)[testTile])
                                     continue;
                                 if (depth != 0)
                                 {
                                     counter += FindAllMoves(testBoard, depth - 1);
-                                                            }
+                                }
                                 else
                                     counter++;
                             }
@@ -495,9 +522,10 @@ namespace test
                             if (!checkBoard[4])
                             {
                                 if (board[68] == 1 && (!checkBoard[3]) && (!checkBoard[2])
-                                && board[3] == 6 && board[2] == 6)
+                                && board[3] == 6 && board[2] == 6 && board[1] == 6)
                                 {
-                                    int[] testBoard = MakeMove(4, 2, board);
+                                    Move move = new Move(4, 2);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (depth != 0)
                                     {
                                         counter += FindAllMoves(testBoard, depth - 1);
@@ -508,7 +536,8 @@ namespace test
                                 if (board[67] == 1 && (!checkBoard[5]) && (!checkBoard[6])
                                 && board[5] == 6 && board[6] == 6)
                                 {
-                                    int[] testBoard = MakeMove(4, 6, board);
+                                    Move move = new Move(4, 6);
+                                    byte[] testBoard = MakeMove(move, board);
                                     if (depth != 0)
                                     {
                                         counter += FindAllMoves(testBoard, depth - 1);
@@ -523,10 +552,28 @@ namespace test
             }
             return counter;
         }
-        private bool[] CheckChecker(int[] board)
+        /// <summary>
+        /// Updates checkBoard based on the moved played.
+        /// </summary>
+        private bool[] CheckUpdate(byte[] board, byte[] checkBoard, Move move)
         {
-            bool[] checks = new bool[64];
-            for (int i = 0; i < 64; i++)
+            byte piece = board[move.startingTile];
+            if (piece == 0)
+            {
+                checkBoard[move.startingTile - 9]--;
+                checkBoard[move.startingTile - 7]--;
+                if (distanceToEdge[move.landingTile][7] != 0)
+                    checkBoard[move.landingTile - 9]++; 
+                if (distanceToEdge[move.landingTile][5] != 0)
+                    checkBoard[move.landingTile - 7]++;
+                foreach(byte slidingPieceIndex in FindSlidingPieces(board, move))
+                {
+
+                }
+            }
+                
+                bool[] checks = new bool[64];
+            for (byte i = 0; i < 64; i++)
             {
                 if ((board[64] == 1 && board[i] < 7)
                 || (board[64] == 0 && board[i] > 5))
@@ -549,17 +596,17 @@ namespace test
                     switch (board[i] % 7)
                     {
                         case 1:
-                            for (int x = 0; x < 8; x++)
+                            for (byte x = 0; x < 8; x++)
                                 if (knightLegalMoves[i, x])
                                     checks[i + nMoves[x]] = true;
                             break;
                         case 2:
-                            for (int x = 0; x < 4; x++)
+                            for (byte x = 0; x < 4; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += bMoves[x];
+                                    testTile = (byte)(testTile + bMoves[x]);
                                     checks[testTile] = true;
                                     if (board[testTile] != 6)
                                         break;
@@ -567,12 +614,12 @@ namespace test
                             }
                             break;
                         case 3:
-                            for (int x = 4; x < 8; x++)
+                            for (byte x = 4; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += rMoves[x - 4];
+                                    testTile = (byte)(testTile + rMoves[x - 4]);
                                     checks[testTile] = true;
                                     if (board[testTile] != 6)
                                         break;
@@ -580,12 +627,12 @@ namespace test
                             }
                             break;
                         case 4:
-                            for (int x = 0; x < 8; x++)
+                            for (byte x = 0; x < 8; x++)
                             {
-                                int testTile = i;
-                                for (int y = 0; y < distanceToEdge[i][x]; y++)
+                                byte testTile = i;
+                                for (byte y = 0; y < distanceToEdge[i][x]; y++)
                                 {
-                                    testTile += qkMoves[x];
+                                    testTile = (byte)(testTile + qkMoves[x]);
                                     checks[testTile] = true;
                                     if (board[testTile] != 6)
                                         break;
@@ -593,7 +640,7 @@ namespace test
                             }
                             break;
                         case 5:
-                            foreach (int d in qkMoves)
+                            foreach (sbyte d in qkMoves)
                             {
                                 if ((!(distanceToEdge[i][7] == 0 && (d == qkMoves[0] || d == qkMoves[3] || d == qkMoves[7])))
                                  && (!(distanceToEdge[i][5] == 0 && (d == qkMoves[1] || d == qkMoves[2] || d == qkMoves[5])))
@@ -606,72 +653,99 @@ namespace test
             }
             return checks;
         }
-        private double Evaluate(int[] board)
+        private byte[] AddChecks(byte[] checkBoard, byte index, byte direction)
+        {
+
+        }
+        private byte[] FindSlidingPieces(byte[] board, Move move)
+        {
+
+        }
+        private double Evaluate(byte[] board)
         {
             double eval = 0;
-            for (int i = 0; i < 64; i++)
+            for (byte i = 0; i < 64; i++)
             {
             }
             return eval;
         }
-        private int[] MakeMove(int sPos, int ePos, int[] oldBoard)
+        /// <summary>
+        /// returns new board with applied move.
+        /// </summary>
+        private byte[] MakeMove(Move move, byte[] oldBoard)
         {
-            int[] board = oldBoard.ToList().ToArray();
-            board[ePos] = board[sPos];
-            if (board[sPos] == 5)
-            {
-                board[65] = 0;
-                board[66] = 0;
-                if (ePos == sPos - 2)
-                {
-                    board[59] = 3;
-                    board[56] = 6;
+            byte[] board = oldBoard.ToList().ToArray();                                                                 // deep copy
 
-                }
-                else if (ePos == sPos + 2)
+            board[70] = (byte) (board[move.landingTile] != 6 || board[move.landingTile] % 7 == 0 ? 0 : board[70] + 1);  // halfmove clock
+
+            if (board[64] == 1) board[71]++;                                                                            // fullmove clock
+
+            board[move.landingTile] = board[move.startingTile];                                                         // set landing tile to new piece
+            
+            if (board[move.startingTile] == 5)                                                                          // if white king moves
+            {
+                board[65] = 0;                                                                                          // no castling rights
+                board[66] = 0;                                                                                         //
+
+                if (move.landingTile == move.startingTile - 2)                                                          // if castle queen side
                 {
-                    board[61] = 3;
-                    board[63] = 6;
+                    board[59] = 3;                                                                                      // change rook
+                    board[56] = 6;                                                                                     //
+                }
+                else if (move.landingTile == move.startingTile + 2)                                                     // if castle king side
+                {
+                    board[61] = 3;                                                                                      // change rook
+                    board[63] = 6;                                                                                     //
                 }
             }
-            else if (board[sPos] == 12)
+            else if (board[move.startingTile] == 12)                                                                    // same for black king
             {
                 board[67] = 0;
                 board[68] = 0;
-                if (ePos == sPos - 2)
+
+                if (move.landingTile == move.startingTile - 2)
                 {
                     board[3] = 10;
                     board[0] = 6;
                 }
-                else if (ePos == sPos + 2)
+                else if (move.landingTile == move.startingTile + 2)
                 {
                     board[5] = 10;
                     board[7] = 6;
                 }
             }
-            else if (board[69] != -999)
-                if (ePos + 8 == board[69] && board[sPos] == 0)
-                    board[ePos + 8] = 6;
-                else if (ePos - 8 == board[69] && board[sPos] == 7)
-                    board[ePos - 8] = 6;
-            board[64] = 1 - board[64];
-            board[65] = board[65] != 0 && board[63] == 3 ? 1 : 0;
-            board[66] = board[66] != 0 && board[56] == 3 ? 1 : 0;
-            board[67] = board[67] != 0 && board[7] == 10 ? 1 : 0;
-            board[68] = board[68] != 0 && board[0] == 10 ? 1 : 0;
-            if ((sPos - ePos == 16 || ePos - sPos == 16) && board[sPos] % 7 == 0)
-                board[69] = ePos;
-            else
-                board[69] = -999;
-            board[sPos] = 6;
+            else if (board[69] != 255 && move.landingTile == board[69])                                                 // if enPassant
+                if (board[move.startingTile] == 0)                                                                      // if white Pawn
+                    board[move.landingTile + 8] = 6;                                                                    // remove pawn under
+                else if (board[move.startingTile] == 7)                                                                 // if black pawn
+                    board[move.landingTile - 8] = 6;                                                                    // remove pawn above
+
+            board[64] = (byte)(1 - board[64]);                                                                          // onTurn change
+            board[65] = (byte)(board[65] != 0 && board[63] == 3 ? 1 : 0);                                               // 
+            board[66] = (byte)(board[66] != 0 && board[56] == 3 ? 1 : 0);                                              //  Update castling rights
+            board[67] = (byte)(board[67] != 0 && board[7] == 10 ? 1 : 0);                                             //
+            board[68] = (byte)(board[68] != 0 && board[0] == 10 ? 1 : 0);                                            //
+
+            if (move.startingTile - move.landingTile == 16 || move.landingTile - move.startingTile == 16)               // if move is up or down 2 squares
+                if (board[move.startingTile] == 0)                                                                      // if white pawn
+                    board[69] = (byte)(move.landingTile + 8);                                                           // set enPassant under
+                else if (board[move.startingTile] == 7)                                                                 // if black pawn
+                    board[69] = (byte)(move.landingTile - 8);                                                           // set enPassant above
+                else
+                    board[69] = 255;                                                                                    // 
+            else                                                                                                       //  set enPassant to none
+                board[69] = 255;                                                                                      //
+
+            board[move.startingTile] = 6;                                                                               // set starting tile to empty
+
             return board;
         }
-        private List<int> ConvertList(List<char> charBoard)
+        private List<byte> ConvertList(List<char> charBoard)
         {
-            List<int> intBoard = new List<int>();
+            List<byte> byteBoard = new List<byte>();
             foreach (char c in charBoard)
-                intBoard.Add(pieceToNum[c]);
-            return intBoard;
+                byteBoard.Add(pieceToNum[c]);
+            return byteBoard;
         }
     }
 }
