@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace test
+namespace consoleChess
 {
     public static class Graphics
     {
         public static int i = 0;
         public static int x = 1;
-        public static string rowSplit = "      -|-----|-----|-----|-----|-----|-----|-----|-----|-";
+        public static string rowSplit = "      -|-----+-----+----+-----+-----+-----+-----+-----+-";
         public static string letterCords = "          A     B     C     D     E     F     G     H";
         public static string midTileEdge = "  |  ";
         public static string tileEdge = "";
-        public static string rowSplitLarge = "        -|---------|---------|---------|---------|---------|---------|---------|---------|-";
+        public static string rowSplitLarge = "        -+---------+---------+---------+---------+---------+---------+---------+---------+-";
         public static string letterCordsLarge = "              A         B         C         D         E         F         G         H";
         public static string midTileEdgeLarge = "    |    ";
         public static string tileEdgeLarge = "         |         |         |         |         |         |         |         |         | ";
@@ -32,13 +32,13 @@ namespace test
         {
             int i = 0;
             int x = 1;
-            string rowSplit = "      -|-----|-----|-----|-----|-----|-----|-----|-----|-";
+            string rowSplit = "      -+-----+-----+-----+-----+-----+-----+-----+-----+-";
             string letterCords = "          A     B     C     D     E     F     G     H";
             string midTileEdge = "  |  ";
             string tileEdge = "";
             if (large)
             {
-                rowSplit = "        -|---------|---------|---------|---------|---------|---------|---------|---------|-";
+                rowSplit = "        -+---------+---------+---------+---------+---------+---------+---------+---------+-";
                 letterCords = "              A         B         C         D         E         F         G         H";
                 midTileEdge = "    |    ";
                 tileEdge = "         |         |         |         |         |         |         |         |         | ";

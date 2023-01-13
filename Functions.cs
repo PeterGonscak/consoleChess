@@ -2,10 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace test
+namespace consoleChess
 {
+    /// <summary>
+    /// Dictionarys and functions.
+    /// </summary>
     public static class Functions
     {
+        /// <summary>
+        /// Letter to its value.
+        /// </summary>
         public static readonly Dictionary<char, int> pieceValues = new Dictionary<char, int>(){
             {'p', 1}, {'P', -1},
             {'n', 3}, {'N', -3},
@@ -15,6 +21,9 @@ namespace test
             {'k', 0}, {'K', 0},
             {' ', 0}
         };
+        /// <summary>
+        /// column or row to value.
+        /// </summary>
         public static readonly Dictionary<char, int> tileValues = new Dictionary<char, int>(){
             {'a', 0},
             {'b', 1},
@@ -33,6 +42,9 @@ namespace test
             {'7', 8},
             {'8', 0}
         };
+        /// <summary>
+        /// value to row
+        /// </summary>
         public static readonly Dictionary<int, char> numValues = new Dictionary<int, char>(){
             {0, 'a'},
             {1, 'b'},
@@ -43,6 +55,9 @@ namespace test
             {6, 'g'},
             {7, 'h'}
         };
+        /// <summary>
+        /// value to column
+        /// </summary>
         public static readonly Dictionary<int, char> rowValues = new Dictionary<int, char>(){
             {56, '1'},
             {48, '2'},
@@ -53,16 +68,33 @@ namespace test
             {8, '7'},
             {0, '8'}
         };
+        /// <summary>
+        /// checks if piece belongs to player off turn.
+        /// </summary>
+        /// <param name="onTurn"> player on turn.</param>
+        /// <param name="piece"> piece to check.</param>
+        /// <returns> true if is enemy </returns>
         public static bool IsEnemy(string onTurn, char piece)
         {
             return (onTurn == "w" && char.IsLower(piece))
                 || (onTurn == "b" && char.IsUpper(piece));
         }
+        /// <summary>
+        /// checks if piece belongs to player on turn.
+        /// </summary>
+        /// <param name="onTurn"> player on turn.</param>
+        /// <param name="piece"> piece to check.</param>
+        /// <returns> true if is friend </returns>
         public static bool IsFriend(string onTurn, char piece)
         {
             return (onTurn == "b" && char.IsLower(piece))
                 || (onTurn == "w" && char.IsUpper(piece));
         }
+        /// <summary>
+        /// basic evaluation of board.
+        /// </summary>
+        /// <param name="board"> board to evaluate. </param>
+        /// <returns> Evaluation </returns>
         public static int Eval(List<char> board)
         {
             int sum = 0;
@@ -70,6 +102,12 @@ namespace test
                 sum += pieceValues[c];
             return sum;
         }
+        /// <summary>
+        /// Generates FEN string from board
+        /// </summary>
+        /// <param name="board"> board from which to create FEN</param>
+        /// <param name="formatFEN"> used to add rules at the end. </param>
+        /// <returns>FEN string</returns>
         public static string GenerateFEN(List<char> board, string[] formatFEN)
         {
             string FEN = "";
@@ -91,14 +129,29 @@ namespace test
             }
             return FEN += " " + formatFEN[1] + " " + formatFEN[2] + " " + formatFEN[3] + " " + formatFEN[4] + " " + formatFEN[5];
         }
+        /// <summary>
+        /// translates row and column to num.
+        /// </summary>
+        /// <param name="s"> row and column</param>
+        /// <returns>int representation of a tile</returns>
         public static int TileToNum(string s)
         {
             return tileValues[s[0]] + tileValues[s[1]];
         }
+        /// <summary>
+        /// translates tile number to row and column.
+        /// </summary>
+        /// <param name="i"> tile number</param>
+        /// <returns> string representation of num</returns>
         public static string NumToTile(int i) 
         {
             return numValues[i % 8].ToString() + rowValues[i - (i % 8)];
         }
+        /// <summary>
+        /// Generates board from FEN specified.
+        /// </summary>
+        /// <param name="FEN"> FEN string used to generate board</param>
+        /// <returns> List filled with char representations of pieces </returns>
         public static List<char> GenerateBoard(string FEN)
         {
             List<char> board = new List<char>();
@@ -173,5 +226,15 @@ namespace test
             }
             return legalMoves;
            }
+        public static Dictionary<byte, byte> flippedDirections = new Dictionary<byte, byte>(){
+            {0, 2},
+            {1, 3},
+            {2, 0},
+            {3, 1},
+            {4, 6},
+            {5, 7},
+            {6, 4},
+            {7, 5},
+        };
     }
 }
